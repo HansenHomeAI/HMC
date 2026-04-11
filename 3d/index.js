@@ -7282,15 +7282,15 @@ var import_react9 = __toESM(require_react(), 1);
 // lib/sogsViewerSceneDefaults.ts
 var SOGS_DEFAULT_SCENE = {
   /** scene-v1 export 2026-03-31 */
-  position: [0.03, 0.1, 0.15],
+  position: [0.03, 0.18, -0.06],
   /** Euler ° (PlayCanvas order: X, Y, Z) */
-  rotation: [81, 80, -179.2],
+  rotation: [91, 80, -179.2],
   scale: 1,
   fov: 60
 };
 /** Default scene skybox Euler ° (PlayCanvas `scene.skyboxRotation`), applied on first frame. */
 var SOGS_DEFAULT_SKYBOX_ROTATION = [90, 0, 0];
-var SOGS_DEFAULT_WORLD_AXES = true;
+var SOGS_DEFAULT_WORLD_AXES = false;
 function createDefaultScenePayload() {
   return {
     position: [...SOGS_DEFAULT_SCENE.position],
@@ -7307,7 +7307,7 @@ function getSogsDeveloperToolsEnabled() {
     if (q === "1" || q === "true") return true;
   } catch {
   }
-  return true;
+  return false;
 }
 
 // lib/sogsViewerBundle.ts
@@ -7434,20 +7434,21 @@ var CANYON_VISTA_INTRO = {
   autoPlayDelayMs: 400
 };
 var CANYON_VISTA_DEFAULT_PATH_CHECKPOINTS = [
-  { position: { x: 0.40964477255036946, y: 0.1317984628066139, z: -0.541768565614951 }, lookAt: { x: -0.11131089694431351, y: -0.0008434320599496337, z: 0.2082213085017396 }, duration: 5 },
-  { position: { x: 0.13965298043640384, y: 0.12097835966092779, z: -0.19173660627796352 }, lookAt: { x: -0.11131089694431362, y: -0.0008434320599496337, z: 0.20822130850173953 }, duration: 5 },
-  { position: { x: -0.43745824533905564, y: 0.11219746848289015, z: 0.10143926211327417 }, lookAt: { x: -0.11131089694431362, y: -0.0008434320599496475, z: 0.20822130850173948 }, duration: 5 },
-  { position: { x: -0.7574030409745154, y: 0.11223439371204139, z: 0.6432294103899845 }, lookAt: { x: -0.11131089694431251, y: -0.0008434320599497169, z: 0.2082213085017397 }, duration: 5 },
-  { position: { x: -0.05049146118671622, y: 0.10292318408873609, z: 0.9934069813144393 }, lookAt: { x: -0.11131089694431287, y: -0.0008434320599497863, z: 0.20822130850174048 }, duration: 5 },
-  { position: { x: 0.7337572595053388, y: 0.119925270827219, z: 0.6049160023210227 }, lookAt: { x: -0.11131089694431417, y: -0.0008434320599496475, z: 0.20822130850173998 }, duration: 5 },
-  { position: { x: 0.07399163788599744, y: 0.1551885974040995, z: -0.013755784878152266 }, lookAt: { x: -0.1113108969443142, y: -0.0008434320599496337, z: 0.20822130850173998 }, duration: 5 },
-  { position: { x: -0.2542575113051125, y: 0.12954908692391795, z: 0.026530091324198368 }, lookAt: { x: -0.11131089694431417, y: -0.0008434320599496614, z: 0.20822130850174006 }, duration: 5 },
-  { position: { x: 0.11486072723000557, y: 0.13823218153948877, z: 0.356507861161102 }, lookAt: { x: -0.11131089694431417, y: -0.0008434320599496614, z: 0.20822130850174006 }, duration: 5 }
+  { position: { x: 0.8990495553938131, y: 0.11360166331028232, z: -0.22841203821618536 }, lookAt: { x: 0.002837527069967427, y: 0.002520074280381132, z: -0.006098803068228298 }, duration: 5 },
+  { position: { x: 0.2659765244593958, y: 0.19408717010395207, z: -0.994040184531832 }, lookAt: { x: 0.002837527069967427, y: 0.0025200742803810905, z: -0.006098803068228409 }, duration: 5 },
+  { position: { x: -0.41511903347447343, y: 0.09519049661564073, z: -0.19373754142321836 }, lookAt: { x: 0.0028375270699674826, y: 0.002520074280381132, z: -0.006098803068228353 }, duration: 5 },
+  { position: { x: -0.1938747065740543, y: 0.04000585610486254, z: 0.12926247125397883 }, lookAt: { x: 0.0028375270699674826, y: 0.0025200742803811182, z: -0.006098803068228326 }, duration: 5 },
+  { position: { x: 0.20610398644976663, y: 0.06915787471354355, z: 0.3067790517811338 }, lookAt: { x: 0.002837527069967455, y: 0.0025200742803811182, z: -0.006098803068228353 }, duration: 5 },
+  { position: { x: 0.527648293797099, y: 0.10217463302174315, z: 0.13194910770707144 }, lookAt: { x: 0.002837527069967538, y: 0.0025200742803811044, z: -0.006098803068228326 }, duration: 5 },
+  { position: { x: 0.057671840072279795, y: 0.07322935377319977, z: -0.21189576536555685 }, lookAt: { x: 0.0008846816290525375, y: 0.002325440095438072, z: -0.021005910921626736 }, duration: 5 },
+  { position: { x: -0.20705431096512888, y: 0.03364026279367531, z: 0.0007159699085273648 }, lookAt: { x: 0.0008846816290525028, y: 0.002325440095438072, z: -0.02100591092162673 }, duration: 5 },
+  { position: { x: -0.7584361713036305, y: 0.42590704201357893, z: 0.7533228467005957 }, lookAt: { x: 0.0008846816290524195, y: 0.002325440095438114, z: -0.021005910921626625 }, duration: 5 },
+  { position: { x: 0.1982136430497511, y: 0.4438111027129064, z: 0.8665073994710487 }, lookAt: { x: 0.0008846816290525306, y: 0.002325440095438003, z: -0.021005910921626625 }, duration: 5 }
 ];
 var CANYON_VISTA_CAMERA_START_Y = 0.55;
 var CANYON_VISTA_CAMERA_WORLD_BOUNDS = {
-  yMin: -100,
-  maxRadiusFromOrigin: 100
+  yMin: 0,
+  maxRadiusFromOrigin: 1
 };
 
 // lib/canyon-vista/canyonVistaOverlays.ts
@@ -14710,6 +14711,9 @@ function SogsMigratedViewer({
     if (bootMode === "mobile-fallback") {
       params.set("quality", "lq");
       params.set("bootMode", "mobile-fallback");
+    }
+    if (!developerToolsEnabled) {
+      params.set("noui", "1");
     }
     return `${viewerBase}?${params.toString()}`;
   })();
