@@ -14164,16 +14164,48 @@ function screenToWorldOnY(screenX, screenY, planeY, cam, width, height) {
   if (!Number.isFinite(t)) return null;
   return near.add(dir.multiplyScalar(t));
 }
+function screenToWorldOnPlane(screenX, screenY, pointOnPlane, planeNormal, cam, width, height) {
+  if (width <= 0 || height <= 0) return null;
+  const ndcX = screenX / width * 2 - 1;
+  const ndcY = -(screenY / height) * 2 + 1;
+  const near = new Vector3(ndcX, ndcY, -1).unproject(cam);
+  const far = new Vector3(ndcX, ndcY, 1).unproject(cam);
+  const dir = far.sub(near);
+  const denom = planeNormal.dot(dir);
+  if (Math.abs(denom) < 1e-6) return null;
+  const t = planeNormal.dot(new Vector3(pointOnPlane.x, pointOnPlane.y, pointOnPlane.z).sub(near)) / denom;
+  if (!Number.isFinite(t)) return null;
+  return near.add(dir.multiplyScalar(t));
+}
+function createSplatTransform(position, rotation, scale) {
+  const rx = (Number(rotation?.[0]) || 0) * Math.PI / 180;
+  const ry = (Number(rotation?.[1]) || 0) * Math.PI / 180;
+  const rz = (Number(rotation?.[2]) || 0) * Math.PI / 180;
+  const q = new Quaternion().setFromEuler(new Euler(rx, ry, rz, "XYZ"));
+  const invQ = q.clone().invert();
+  const p = new Vector3(Number(position?.[0]) || 0, Number(position?.[1]) || 0, Number(position?.[2]) || 0);
+  const s = Number.isFinite(scale) && scale !== 0 ? scale : 1;
+  return { p, q, invQ, s };
+}
+function splatLocalToWorld(local, transform) {
+  return new Vector3(local.x, local.y, local.z).multiplyScalar(transform.s).applyQuaternion(transform.q).add(transform.p);
+}
+function splatWorldToLocal(world, transform) {
+  return new Vector3(world.x, world.y, world.z).sub(transform.p).applyQuaternion(transform.invQ).divideScalar(transform.s);
+}
+function splatLocalNormalToWorld(local, transform) {
+  return new Vector3(local.x, local.y, local.z).applyQuaternion(transform.q).normalize();
+}
 
 // components/sogs-migrated-viewer/LotLinesOverlay.tsx
 var import_jsx_runtime7 = __toESM(require_jsx_runtime(), 1);
-function LotLinesOverlay({ enabled, poseRef, containerRef, borderDots = CANYON_VISTA_BORDER_DOTS, borderLines = CANYON_VISTA_BORDER_LINES, editable = false, selectedPointName = "", onPointMove, onPointSelect }) {
+function LotLinesOverlay({ enabled, poseRef, containerRef, borderDots = CANYON_VISTA_BORDER_DOTS, editable = false, selectedPointName = "", onPointMove, onPointSelect, splatPosition = [0, 0, 0], splatRotation = [0, 0, 0], splatScale = 1 }) {
   const cameraRef = (0, import_react5.useRef)(createOverlayPerspectiveCamera());
   const dragPointRef = (0, import_react5.useRef)(null);
-  const [pack, setPack] = (0, import_react5.useState)({ w: 0, h: 0, lines: [], points: [] });
+  const [pack, setPack] = (0, import_react5.useState)({ w: 0, h: 0, points: [] });
   (0, import_react5.useEffect)(() => {
-    if (!enabled) {
-      setPack({ w: 0, h: 0, lines: [], points: [] });
+    if (!enabled || !editable) {
+      setPack({ w: 0, h: 0, points: [] });
       return;
     }
     let raf = 0;
@@ -14185,34 +14217,20 @@ function LotLinesOverlay({ enabled, poseRef, containerRef, borderDots = CANYON_V
         const h = el.clientHeight;
         const cam = cameraRef.current;
         syncOverlayCamera(cam, pose, w, h);
-        const lines = [];
-        const borderByName = new Map(borderDots.map((b) => [b.name, b]));
-        for (const seg of borderLines) {
-          const a = borderByName.get(seg.start);
-          const b = borderByName.get(seg.end);
-          if (!a || !b) continue;
-          const pa = projectWorldToScreen(a.position, cam, w, h);
-          const pb = projectWorldToScreen(b.position, cam, w, h);
-          lines.push({
-            x1: pa.x,
-            y1: pa.y,
-            x2: pb.x,
-            y2: pb.y,
-            visible: pa.visible && pb.visible
-          });
-        }
+        const transform = createSplatTransform(splatPosition, splatRotation, splatScale);
         const points = borderDots.map((dot) => {
-          const p = projectWorldToScreen(dot.position, cam, w, h);
+          const world = splatLocalToWorld(dot.position, transform);
+          const p = projectWorldToScreen(world, cam, w, h);
           return { name: dot.name, x: p.x, y: p.y, visible: p.visible };
         });
-        setPack({ w, h, lines, points });
+        setPack({ w, h, points });
       }
       raf = requestAnimationFrame(tick);
     };
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
-  }, [enabled, poseRef, containerRef, borderDots, borderLines]);
-  if (!enabled || pack.w <= 0 || pack.h <= 0) {
+  }, [enabled, editable, poseRef, containerRef, borderDots, splatPosition, splatRotation, splatScale]);
+  if (!enabled || !editable || pack.w <= 0 || pack.h <= 0) {
     return null;
   }
   const moveDraggedPoint = (event) => {
@@ -14223,11 +14241,15 @@ function LotLinesOverlay({ enabled, poseRef, containerRef, borderDots = CANYON_V
     const pose = poseRef.current;
     if (!dot || !el || !pose) return;
     const r = el.getBoundingClientRect();
-    const world = screenToWorldOnY(event.clientX - r.left, event.clientY - r.top, dot.position.y, cameraRef.current, pack.w, pack.h);
+    const transform = createSplatTransform(splatPosition, splatRotation, splatScale);
+    const pointOnPlane = splatLocalToWorld(dot.position, transform);
+    const planeNormal = splatLocalNormalToWorld({ x: 0, y: 1, z: 0 }, transform);
+    const world = screenToWorldOnPlane(event.clientX - r.left, event.clientY - r.top, pointOnPlane, planeNormal, cameraRef.current, pack.w, pack.h);
     if (!world) return;
+    const local = splatWorldToLocal(world, transform);
     event.preventDefault();
     event.stopPropagation();
-    onPointMove(name, { x: roundSplatThousandths(world.x), y: dot.position.y, z: roundSplatThousandths(world.z) });
+    onPointMove(name, { x: roundSplatThousandths(local.x), y: dot.position.y, z: roundSplatThousandths(local.z) });
   };
   return /* @__PURE__ */ (0, import_jsx_runtime7.jsxs)(
     "svg",
@@ -14244,41 +14266,25 @@ function LotLinesOverlay({ enabled, poseRef, containerRef, borderDots = CANYON_V
       onPointerLeave: () => {
         dragPointRef.current = null;
       },
-      children: [
-        pack.lines.map(
-          (ln, i) => ln.visible ? /* @__PURE__ */ (0, import_jsx_runtime7.jsx)(
-            "line",
-            {
-              x1: ln.x1,
-              y1: ln.y1,
-              x2: ln.x2,
-              y2: ln.y2,
-              stroke: "rgba(255,255,255,0.55)",
-              strokeWidth: 1.5
-            },
-            i
-          ) : null
-        ),
-        editable ? pack.points.map(
-          (pt) => pt.visible ? /* @__PURE__ */ (0, import_jsx_runtime7.jsx)(
-            "circle",
-            {
-              cx: pt.x,
-              cy: pt.y,
-              r: pt.name === selectedPointName ? 7 : 5,
-              className: `lot-line-handle ${pt.name === selectedPointName ? "lot-line-handle--selected" : ""}`,
-              onPointerDown: (event) => {
-                dragPointRef.current = pt.name;
-                event.currentTarget.setPointerCapture?.(event.pointerId);
-                event.preventDefault();
-                event.stopPropagation();
-                onPointSelect?.(pt.name);
-              }
-            },
-            pt.name
-          ) : null
+      children: pack.points.map(
+        (pt) => pt.visible ? /* @__PURE__ */ (0, import_jsx_runtime7.jsx)(
+          "circle",
+          {
+            cx: pt.x,
+            cy: pt.y,
+            r: pt.name === selectedPointName ? 7 : 5,
+            className: `lot-line-handle ${pt.name === selectedPointName ? "lot-line-handle--selected" : ""}`,
+            onPointerDown: (event) => {
+              dragPointRef.current = pt.name;
+              event.currentTarget.setPointerCapture?.(event.pointerId);
+              event.preventDefault();
+              event.stopPropagation();
+              onPointSelect?.(pt.name);
+            }
+          },
+          pt.name
         ) : null
-      ]
+      )
     }
   );
 }
@@ -15016,6 +15022,15 @@ function SogsMigratedViewer({
   }, [showWorldAxes, viewerState]);
   (0, import_react9.useEffect)(() => {
     if (viewerState !== "ready") return;
+    postToWindow(iframeRef.current?.contentWindow, {
+      type: "sogs:lotLines",
+      enabled: showLotLines,
+      dots: lotDots,
+      lines: CANYON_VISTA_BORDER_LINES
+    });
+  }, [showLotLines, lotDots, viewerState]);
+  (0, import_react9.useEffect)(() => {
+    if (viewerState !== "ready") return;
     const yMin = roundSplatThousandths(cameraYMin);
     const maxR = roundSplatThousandths(cameraMaxRadius);
     postToWindow(iframeRef.current?.contentWindow, {
@@ -15286,6 +15301,9 @@ function SogsMigratedViewer({
           selectedPointName: selectedLotPointName,
           onPointMove: updateLotDotPosition,
           onPointSelect: setSelectedLotPointName,
+          splatPosition,
+          splatRotation,
+          splatScale,
           poseRef,
           containerRef
         }

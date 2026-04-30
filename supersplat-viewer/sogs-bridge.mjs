@@ -16,6 +16,7 @@ const tmpFocus = new Vec3();
 const AXIS_LEN = 10;
 /** Cylinder radius (÷10 vs prior 0.05 for skinnier rods). */
 const AXIS_RADIUS = 0.005;
+const LOT_LINE_RADIUS = 0.0035;
 const MAIN_BOOT_TIMEOUT_MS = 60e3;
 const BRIDGE_WAIT_TIMEOUT_MS = 60e3;
 /**
@@ -23,6 +24,7 @@ const BRIDGE_WAIT_TIMEOUT_MS = 60e3;
  * on Immediate so they composite after the splat and stay visible.
  */
 const LAYER_ID_IMMEDIATE = 3;
+const LOCAL_Y = new Vec3(0, 1, 0);
 
 function getBootOptions() {
   if (typeof window === "undefined") {
@@ -286,6 +288,15 @@ function axisMaterial(rgb) {
   return m;
 }
 
+function lotLineMaterial() {
+  const m = new StandardMaterial();
+  m.diffuse = new Color(0.96, 0.93, 0.82);
+  m.emissive = new Color(0.72, 0.66, 0.48);
+  m.emissiveIntensity = 0.45;
+  m.useLighting = false;
+  return m;
+}
+
 /** After `render` exists: draw on Immediate layer (after World), so gsplat does not paint over axes. */
 function setAxisGuideRenderLayer(ent) {
   try {
@@ -308,6 +319,17 @@ function buildAxisCylinderMesh(app, radius = AXIS_RADIUS) {
     radius,
     heightSegments: 1,
     capSegments: 12,
+  });
+  return Mesh.fromGeometry(device, geom);
+}
+
+function buildUnitCylinderMesh(app, radius = LOT_LINE_RADIUS) {
+  const device = app.graphicsDevice;
+  const geom = new CylinderGeometry({
+    height: 1,
+    radius,
+    heightSegments: 1,
+    capSegments: 10,
   });
   return Mesh.fromGeometry(device, geom);
 }
@@ -420,6 +442,79 @@ function syncSogsAxesGuides(app) {
   app.renderNextFrame = true;
 }
 
+function destroySogsLotLines() {
+  if (!window.__sogsLotLinesRoot) {
+    return;
+  }
+  try {
+    window.__sogsLotLinesRoot.destroy();
+  } catch {
+    /* ignore */
+  }
+  window.__sogsLotLinesRoot = null;
+}
+
+function setupSogsLotLines(app, gsplatEntity) {
+  destroySogsLotLines();
+  const dots = Array.isArray(window.__sogsLotLineDots) ? window.__sogsLotLineDots : [];
+  const lines = Array.isArray(window.__sogsLotLineSegments) ? window.__sogsLotLineSegments : [];
+  if (!window.__sogsLotLinesEnabled || !dots.length || !lines.length) {
+    return;
+  }
+
+  const byName = new Map();
+  for (const dot of dots) {
+    const p = dot?.position;
+    if (!dot?.name || !p) continue;
+    const x = Number(p.x);
+    const y = Number(p.y);
+    const z = Number(p.z);
+    if (Number.isFinite(x) && Number.isFinite(y) && Number.isFinite(z)) {
+      byName.set(dot.name, new Vec3(x, y, z));
+    }
+  }
+
+  const mesh = buildUnitCylinderMesh(app);
+  const mat = lotLineMaterial();
+  const root = new Entity("sogsLotLines", app);
+  gsplatEntity.addChild(root);
+
+  for (const seg of lines) {
+    const a = byName.get(seg?.start);
+    const b = byName.get(seg?.end);
+    if (!a || !b) continue;
+    const dx = b.x - a.x;
+    const dy = b.y - a.y;
+    const dz = b.z - a.z;
+    const len = Math.hypot(dx, dy, dz);
+    if (!Number.isFinite(len) || len <= 1e-6) continue;
+
+    const dir = new Vec3(dx / len, dy / len, dz / len);
+    const ent = new Entity(`lotLine:${seg.start}:${seg.end}`, app);
+    ent.setLocalPosition((a.x + b.x) / 2, (a.y + b.y) / 2, (a.z + b.z) / 2);
+    ent.setLocalRotation(new Quat().setFromDirections(LOCAL_Y, dir));
+    ent.setLocalScale(1, len, 1);
+    const mi = new MeshInstance(mesh, mat, ent);
+    ent.addComponent("render", {
+      meshInstances: [mi],
+      castShadows: false,
+      receiveShadows: false,
+    });
+    root.addChild(ent);
+  }
+
+  window.__sogsLotLinesRoot = root;
+}
+
+function syncSogsLotLines(app) {
+  const g = app.root.findByName("gsplat");
+  if (!g) {
+    return;
+  }
+  setupSogsLotLines(app, g);
+  app.renderNextFrame = true;
+}
+
 document.addEventListener("DOMContentLoaded", async () => {
   const bootOptions = getBootOptions();
   postBootEvent("supersplat:bootStart", { quality: bootOptions.quality });
@@ -508,6 +603,12 @@ document.addEventListener("DOMContentLoaded", async () => {
       if (d.type === "sogs:worldGuides") {
         window.__sogsWorldGuidesEnabled = !!d.enabled;
         syncWorldAxesGuides(app);
+      }
+      if (d.type === "sogs:lotLines") {
+        window.__sogsLotLinesEnabled = !!d.enabled;
+        window.__sogsLotLineDots = Array.isArray(d.dots) ? d.dots : [];
+        window.__sogsLotLineSegments = Array.isArray(d.lines) ? d.lines : [];
+        syncSogsLotLines(app);
       }
       if (d.type === "sogs:requestState") {
         postSogsState();
