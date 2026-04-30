@@ -7565,6 +7565,17 @@ function createDefaultLotLines() {
 function createDefaultLotDots() {
   return CANYON_VISTA_BORDER_DOTS.map((d) => ({ name: d.name, position: { ...d.position } }));
 }
+function createNextLotVertexName(dots) {
+  const prefix = dots.length > 0 && dots.every((d) => d.name.startsWith("KML_V")) ? "KML_V" : "Lot_V";
+  const max = dots.reduce((highest, dot) => {
+    const match = dot.name.match(/_(\d+)$/);
+    return match ? Math.max(highest, Number(match[1]) || 0) : highest;
+  }, 0);
+  let next = max + 1;
+  const names = new Set(dots.map((d) => d.name));
+  while (names.has(`${prefix}${next}`)) next++;
+  return `${prefix}${next}`;
+}
 function parseKmlCoordinateText(text) {
   return text.trim().split(/\s+/).map((chunk) => {
     const [lon, lat, alt = "0"] = chunk.split(",");
@@ -14246,12 +14257,13 @@ function screenToWorldOnPlane(screenX, screenY, pointOnPlane, planeNormal, cam, 
 }
 // components/sogs-migrated-viewer/LotLinesOverlay.tsx
 var import_jsx_runtime7 = __toESM(require_jsx_runtime(), 1);
-function LotLinesOverlay({ enabled, iframeRef, containerRef, borderDots = CANYON_VISTA_BORDER_DOTS, editable = false, selectedPointName = "", onPointMove, onPointSelect }) {
+var LOT_LINE_MERGE_SCREEN_DISTANCE = 18;
+function LotLinesOverlay({ enabled, iframeRef, containerRef, borderDots = CANYON_VISTA_BORDER_DOTS, borderLines = [], editable = false, selectedPointName = "", onPointMove, onPointSelect, onPointMerge, onSegmentAdd }) {
   const dragPointRef = (0, import_react5.useRef)(null);
-  const [pack, setPack] = (0, import_react5.useState)({ w: 0, h: 0, points: [] });
+  const [pack, setPack] = (0, import_react5.useState)({ w: 0, h: 0, points: [], segments: [] });
   (0, import_react5.useEffect)(() => {
     if (!enabled || !editable) {
-      setPack({ w: 0, h: 0, points: [] });
+      setPack({ w: 0, h: 0, points: [], segments: [] });
       return;
     }
     let raf = 0;
@@ -14263,15 +14275,31 @@ function LotLinesOverlay({ enabled, iframeRef, containerRef, borderDots = CANYON
         const h = el.clientHeight;
         const points = borderDots.map((dot) => {
           const p = projectLotLinePoint(dot.position);
-          return { name: dot.name, x: Number(p?.x) || 0, y: Number(p?.y) || 0, visible: p?.visible === true };
+          const x = Number(p?.x) || 0;
+          const y = Number(p?.y) || 0;
+          return { name: dot.name, x, y, visible: p?.visible === true && x >= 0 && x <= w && y >= 0 && y <= h };
         });
-        setPack({ w, h, points });
+        const byName = new Map(borderDots.map((dot) => [dot.name, dot]));
+        const segments = borderLines.map((line) => {
+          const a = byName.get(line.start);
+          const b = byName.get(line.end);
+          if (!a || !b) return null;
+          const p = projectLotLinePoint({
+            x: (a.position.x + b.position.x) / 2,
+            y: (a.position.y + b.position.y) / 2,
+            z: (a.position.z + b.position.z) / 2
+          });
+          const x = Number(p?.x) || 0;
+          const y = Number(p?.y) || 0;
+          return { start: line.start, end: line.end, x, y, visible: p?.visible === true && x >= 0 && x <= w && y >= 0 && y <= h };
+        }).filter(Boolean);
+        setPack({ w, h, points, segments });
       }
       raf = requestAnimationFrame(tick);
     };
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
-  }, [enabled, editable, iframeRef, containerRef, borderDots]);
+  }, [enabled, editable, iframeRef, containerRef, borderDots, borderLines]);
   if (!enabled || !editable || pack.w <= 0 || pack.h <= 0) {
     return null;
   }
@@ -14289,6 +14317,27 @@ function LotLinesOverlay({ enabled, iframeRef, containerRef, borderDots = CANYON
     event.stopPropagation();
     onPointMove(name, { x: roundSplatThousandths(world.x), y: dot.position.y, z: roundSplatThousandths(world.z) });
   };
+  const finishDraggedPoint = (event) => {
+    const name = dragPointRef.current;
+    dragPointRef.current = null;
+    if (!name || !onPointMerge) return;
+    const r = event.currentTarget.getBoundingClientRect();
+    const x = event.clientX - r.left;
+    const y = event.clientY - r.top;
+    let nearest = null;
+    for (const pt of pack.points) {
+      if (!pt.visible || pt.name === name) continue;
+      const dist = Math.hypot(pt.x - x, pt.y - y);
+      if (dist <= LOT_LINE_MERGE_SCREEN_DISTANCE && (!nearest || dist < nearest.dist)) {
+        nearest = { name: pt.name, dist };
+      }
+    }
+    if (nearest) {
+      event.preventDefault();
+      event.stopPropagation();
+      onPointMerge(name, nearest.name);
+    }
+  };
   return /* @__PURE__ */ (0, import_jsx_runtime7.jsxs)(
     "svg",
     {
@@ -14298,32 +14347,53 @@ function LotLinesOverlay({ enabled, iframeRef, containerRef, borderDots = CANYON
       viewBox: `0 0 ${pack.w} ${pack.h}`,
       "aria-hidden": !editable,
       onPointerMove: moveDraggedPoint,
-      onPointerUp: () => {
-        dragPointRef.current = null;
-      },
+      onPointerUp: finishDraggedPoint,
       onPointerLeave: () => {
         dragPointRef.current = null;
       },
-      children: pack.points.map(
-        (pt) => pt.visible ? /* @__PURE__ */ (0, import_jsx_runtime7.jsx)(
-          "circle",
-          {
-            cx: pt.x,
-            cy: pt.y,
-            r: pt.name === selectedPointName ? 9 : 7,
-            "data-name": pt.name,
-            className: `lot-line-handle ${pt.name === selectedPointName ? "lot-line-handle--selected" : ""}`,
-            onPointerDown: (event) => {
-              dragPointRef.current = pt.name;
-              event.currentTarget.setPointerCapture?.(event.pointerId);
-              event.preventDefault();
-              event.stopPropagation();
-              onPointSelect?.(pt.name);
-            }
-          },
-          pt.name
-        ) : null
-      )
+      children: [
+        pack.segments.map(
+          (seg) => seg.visible ? /* @__PURE__ */ (0, import_jsx_runtime7.jsxs)(
+            "g",
+            {
+              className: "lot-line-segment-add",
+              "data-start": seg.start,
+              "data-end": seg.end,
+              transform: `translate(${seg.x} ${seg.y})`,
+              onPointerDown: (event) => {
+                event.preventDefault();
+                event.stopPropagation();
+                onSegmentAdd?.(seg.start, seg.end);
+              },
+              children: [
+                /* @__PURE__ */ (0, import_jsx_runtime7.jsx)("circle", { r: "8" }),
+                /* @__PURE__ */ (0, import_jsx_runtime7.jsx)("path", { d: "M-3 0h6M0-3v6" })
+              ]
+            },
+            `${seg.start}:${seg.end}`
+          ) : null
+        ),
+        pack.points.map(
+          (pt) => pt.visible ? /* @__PURE__ */ (0, import_jsx_runtime7.jsx)(
+            "circle",
+            {
+              cx: pt.x,
+              cy: pt.y,
+              r: pt.name === selectedPointName ? 9 : 7,
+              "data-name": pt.name,
+              className: `lot-line-handle ${pt.name === selectedPointName ? "lot-line-handle--selected" : ""}`,
+              onPointerDown: (event) => {
+                dragPointRef.current = pt.name;
+                event.currentTarget.setPointerCapture?.(event.pointerId);
+                event.preventDefault();
+                event.stopPropagation();
+                onPointSelect?.(pt.name);
+              }
+            },
+            pt.name
+          ) : null
+        )
+      ]
     }
   );
 }
@@ -14758,6 +14828,51 @@ function SogsMigratedViewer({
   const updateKmlTransform = (0, import_react9.useCallback)((patch) => {
     setKmlTransform((current) => ({ ...current, ...patch }));
   }, []);
+  const detachKmlTransformForManualEdit = (0, import_react9.useCallback)(() => {
+    setKmlBoundary(null);
+    setKmlStatus((status) => status ? `${status} Converted to editable vertices.` : "Converted to editable vertices.");
+  }, []);
+  const addLotVertexOnSegment = (0, import_react9.useCallback)((start, end) => {
+    const a = lotDots.find((d) => d.name === start);
+    const b = lotDots.find((d) => d.name === end);
+    if (!a || !b) return;
+    const name = createNextLotVertexName(lotDots);
+    const newDot = {
+      name,
+      position: {
+        x: roundSplatThousandths((a.position.x + b.position.x) / 2),
+        y: roundSplatThousandths((a.position.y + b.position.y) / 2),
+        z: roundSplatThousandths((a.position.z + b.position.z) / 2)
+      }
+    };
+    setLotDots((dots) => [...dots, newDot]);
+    setLotLines((lines) => lines.flatMap((line) => line.start === start && line.end === end ? [{ start, end: name }, { start: name, end }] : [line]));
+    setSelectedLotPointName(name);
+    detachKmlTransformForManualEdit();
+  }, [detachKmlTransformForManualEdit, lotDots]);
+  const mergeLotVertices = (0, import_react9.useCallback)((fromName, toName) => {
+    if (!fromName || !toName || fromName === toName || lotDots.length <= 3) return;
+    const from = lotDots.find((d) => d.name === fromName);
+    const to = lotDots.find((d) => d.name === toName);
+    if (!from || !to) return;
+    setLotDots((dots) => dots.filter((d) => d.name !== fromName));
+    setLotLines((lines) => {
+      const seen = new Set();
+      const next = [];
+      for (const line of lines) {
+        const start = line.start === fromName ? toName : line.start;
+        const end = line.end === fromName ? toName : line.end;
+        if (start === end) continue;
+        const key = `${start}:${end}`;
+        if (seen.has(key)) continue;
+        seen.add(key);
+        next.push({ start, end });
+      }
+      return next;
+    });
+    setSelectedLotPointName(toName);
+    detachKmlTransformForManualEdit();
+  }, [detachKmlTransformForManualEdit, lotDots]);
   (0, import_react9.useEffect)(() => {
     if (!kmlBoundary) return;
     const built = buildLotFromKmlBoundary(kmlBoundary, kmlTransform);
@@ -15376,10 +15491,13 @@ function SogsMigratedViewer({
         {
           enabled: viewerState === "ready" && showLotLines,
           borderDots: lotDots,
+          borderLines: lotLines,
           editable: developerToolsEnabled,
           selectedPointName: selectedLotPointName,
           onPointMove: updateLotDotPosition,
           onPointSelect: setSelectedLotPointName,
+          onPointMerge: mergeLotVertices,
+          onSegmentAdd: addLotVertexOnSegment,
           iframeRef,
           containerRef
         }
