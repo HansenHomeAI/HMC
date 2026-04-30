@@ -425,6 +425,17 @@
   font-size: 10px;
   color: rgba(255, 255, 255, 0.7);
 }
+.lot-line-editor-panel {
+  left: 12px;
+  right: auto;
+}
+.lot-line-editor-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 8px;
+  margin-bottom: 8px;
+}
 .animation-editor-summary {
   margin: 0 0 4px;
   font-size: 10px;
@@ -1208,6 +1219,20 @@
   left: 0;
   pointer-events: none;
   z-index: 5;
+}
+.lot-lines-svg--editable {
+  pointer-events: auto;
+}
+.lot-line-handle {
+  fill: rgba(255, 255, 255, 0.92);
+  stroke: rgba(0, 0, 0, 0.62);
+  stroke-width: 2;
+  cursor: grab;
+  pointer-events: auto;
+}
+.lot-line-handle--selected {
+  fill: #ffef8a;
+  stroke: rgba(0, 0, 0, 0.8);
 }
 .sold-hotspot-layer {
   position: absolute;

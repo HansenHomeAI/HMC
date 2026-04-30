@@ -16,8 +16,8 @@ const tmpFocus = new Vec3();
 const AXIS_LEN = 10;
 /** Cylinder radius (÷10 vs prior 0.05 for skinnier rods). */
 const AXIS_RADIUS = 0.005;
-const MAIN_BOOT_TIMEOUT_MS = 15e3;
-const BRIDGE_WAIT_TIMEOUT_MS = 12e3;
+const MAIN_BOOT_TIMEOUT_MS = 60e3;
+const BRIDGE_WAIT_TIMEOUT_MS = 60e3;
 /**
  * PlayCanvas default layer ids (must match bundled engine). Gsplat draws in World; we draw axes
  * on Immediate so they composite after the splat and stay visible.

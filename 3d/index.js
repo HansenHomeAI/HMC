@@ -7307,7 +7307,7 @@ function getSogsDeveloperToolsEnabled() {
     if (q === "1" || q === "true") return true;
   } catch {
   }
-  return false;
+  return true;
 }
 
 // lib/sogsViewerBundle.ts
@@ -14152,15 +14152,28 @@ function projectWorldToScreen(world, cam, width, height) {
   const visible = Math.abs(v.x) <= 1.1 && Math.abs(v.y) <= 1.1 && v.z > -1 && v.z < 1;
   return { x, y, visible };
 }
+function screenToWorldOnY(screenX, screenY, planeY, cam, width, height) {
+  if (width <= 0 || height <= 0) return null;
+  const ndcX = screenX / width * 2 - 1;
+  const ndcY = -(screenY / height) * 2 + 1;
+  const near = new Vector3(ndcX, ndcY, -1).unproject(cam);
+  const far = new Vector3(ndcX, ndcY, 1).unproject(cam);
+  const dir = far.sub(near);
+  if (Math.abs(dir.y) < 1e-6) return null;
+  const t = (planeY - near.y) / dir.y;
+  if (!Number.isFinite(t)) return null;
+  return near.add(dir.multiplyScalar(t));
+}
 
 // components/sogs-migrated-viewer/LotLinesOverlay.tsx
 var import_jsx_runtime7 = __toESM(require_jsx_runtime(), 1);
-function LotLinesOverlay({ enabled, poseRef, containerRef }) {
+function LotLinesOverlay({ enabled, poseRef, containerRef, borderDots = CANYON_VISTA_BORDER_DOTS, borderLines = CANYON_VISTA_BORDER_LINES, editable = false, selectedPointName = "", onPointMove, onPointSelect }) {
   const cameraRef = (0, import_react5.useRef)(createOverlayPerspectiveCamera());
-  const [pack, setPack] = (0, import_react5.useState)({ w: 0, h: 0, lines: [] });
+  const dragPointRef = (0, import_react5.useRef)(null);
+  const [pack, setPack] = (0, import_react5.useState)({ w: 0, h: 0, lines: [], points: [] });
   (0, import_react5.useEffect)(() => {
     if (!enabled) {
-      setPack({ w: 0, h: 0, lines: [] });
+      setPack({ w: 0, h: 0, lines: [], points: [] });
       return;
     }
     let raf = 0;
@@ -14173,9 +14186,10 @@ function LotLinesOverlay({ enabled, poseRef, containerRef }) {
         const cam = cameraRef.current;
         syncOverlayCamera(cam, pose, w, h);
         const lines = [];
-        for (const seg of CANYON_VISTA_BORDER_LINES) {
-          const a = CANYON_BORDER_BY_NAME.get(seg.start);
-          const b = CANYON_BORDER_BY_NAME.get(seg.end);
+        const borderByName = new Map(borderDots.map((b) => [b.name, b]));
+        for (const seg of borderLines) {
+          const a = borderByName.get(seg.start);
+          const b = borderByName.get(seg.end);
           if (!a || !b) continue;
           const pa = projectWorldToScreen(a.position, cam, w, h);
           const pb = projectWorldToScreen(b.position, cam, w, h);
@@ -14187,30 +14201,86 @@ function LotLinesOverlay({ enabled, poseRef, containerRef }) {
             visible: pa.visible && pb.visible
           });
         }
-        setPack({ w, h, lines });
+        const points = borderDots.map((dot) => {
+          const p = projectWorldToScreen(dot.position, cam, w, h);
+          return { name: dot.name, x: p.x, y: p.y, visible: p.visible };
+        });
+        setPack({ w, h, lines, points });
       }
       raf = requestAnimationFrame(tick);
     };
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
-  }, [enabled, poseRef, containerRef]);
+  }, [enabled, poseRef, containerRef, borderDots, borderLines]);
   if (!enabled || pack.w <= 0 || pack.h <= 0) {
     return null;
   }
-  return /* @__PURE__ */ (0, import_jsx_runtime7.jsx)("svg", { className: "lot-lines-svg", width: pack.w, height: pack.h, viewBox: `0 0 ${pack.w} ${pack.h}`, "aria-hidden": true, children: pack.lines.map(
-    (ln, i) => ln.visible ? /* @__PURE__ */ (0, import_jsx_runtime7.jsx)(
-      "line",
-      {
-        x1: ln.x1,
-        y1: ln.y1,
-        x2: ln.x2,
-        y2: ln.y2,
-        stroke: "rgba(255,255,255,0.55)",
-        strokeWidth: 1.5
+  const moveDraggedPoint = (event) => {
+    const name = dragPointRef.current;
+    if (!editable || !name || !onPointMove) return;
+    const dot = borderDots.find((d) => d.name === name);
+    const el = event.currentTarget;
+    const pose = poseRef.current;
+    if (!dot || !el || !pose) return;
+    const r = el.getBoundingClientRect();
+    const world = screenToWorldOnY(event.clientX - r.left, event.clientY - r.top, dot.position.y, cameraRef.current, pack.w, pack.h);
+    if (!world) return;
+    event.preventDefault();
+    event.stopPropagation();
+    onPointMove(name, { x: roundSplatThousandths(world.x), y: dot.position.y, z: roundSplatThousandths(world.z) });
+  };
+  return /* @__PURE__ */ (0, import_jsx_runtime7.jsxs)(
+    "svg",
+    {
+      className: `lot-lines-svg ${editable ? "lot-lines-svg--editable" : ""}`,
+      width: pack.w,
+      height: pack.h,
+      viewBox: `0 0 ${pack.w} ${pack.h}`,
+      "aria-hidden": !editable,
+      onPointerMove: moveDraggedPoint,
+      onPointerUp: () => {
+        dragPointRef.current = null;
       },
-      i
-    ) : null
-  ) });
+      onPointerLeave: () => {
+        dragPointRef.current = null;
+      },
+      children: [
+        pack.lines.map(
+          (ln, i) => ln.visible ? /* @__PURE__ */ (0, import_jsx_runtime7.jsx)(
+            "line",
+            {
+              x1: ln.x1,
+              y1: ln.y1,
+              x2: ln.x2,
+              y2: ln.y2,
+              stroke: "rgba(255,255,255,0.55)",
+              strokeWidth: 1.5
+            },
+            i
+          ) : null
+        ),
+        editable ? pack.points.map(
+          (pt) => pt.visible ? /* @__PURE__ */ (0, import_jsx_runtime7.jsx)(
+            "circle",
+            {
+              cx: pt.x,
+              cy: pt.y,
+              r: pt.name === selectedPointName ? 7 : 5,
+              className: `lot-line-handle ${pt.name === selectedPointName ? "lot-line-handle--selected" : ""}`,
+              onPointerDown: (event) => {
+                dragPointRef.current = pt.name;
+                event.currentTarget.setPointerCapture?.(event.pointerId);
+                event.preventDefault();
+                event.stopPropagation();
+                onPointSelect?.(pt.name);
+              }
+            },
+            pt.name
+          ) : null
+        ) : null
+      ]
+    }
+  );
 }
 
 // components/sogs-migrated-viewer/SoldOverlays.tsx
@@ -14568,6 +14638,8 @@ function SogsMigratedViewer({
   const [showTapDots, setShowTapDots] = (0, import_react9.useState)(false);
   const [showLotLines, setShowLotLines] = (0, import_react9.useState)(false);
   const [showSoldLabels, setShowSoldLabels] = (0, import_react9.useState)(false);
+  const [lotDots, setLotDots] = (0, import_react9.useState)(() => CANYON_VISTA_BORDER_DOTS.map((d) => ({ name: d.name, position: { ...d.position } })));
+  const [selectedLotPointName, setSelectedLotPointName] = (0, import_react9.useState)(() => CANYON_VISTA_BORDER_DOTS[0]?.name ?? "");
   const [pathVersion, setPathVersion] = (0, import_react9.useState)(0);
   const [photoDot, setPhotoDot] = (0, import_react9.useState)(null);
   const [pathPanelOpen, setPathPanelOpen] = (0, import_react9.useState)(false);
@@ -14601,6 +14673,22 @@ function SogsMigratedViewer({
     maxR: CANYON_VISTA_CAMERA_WORLD_BOUNDS.maxRadiusFromOrigin
   });
   const showWorldAxesRef = (0, import_react9.useRef)(SOGS_DEFAULT_WORLD_AXES);
+  const selectedLotDot = (0, import_react9.useMemo)(() => lotDots.find((d) => d.name === selectedLotPointName) ?? lotDots[0] ?? null, [lotDots, selectedLotPointName]);
+  const updateLotDotPosition = (0, import_react9.useCallback)((name, position) => {
+    setSelectedLotPointName(name);
+    setLotDots((dots) => dots.map((d) => d.name === name ? { ...d, position: { x: roundSplatThousandths(position.x), y: roundSplatThousandths(position.y), z: roundSplatThousandths(position.z) } } : d));
+  }, []);
+  const resetLotDots = (0, import_react9.useCallback)(() => {
+    setLotDots(CANYON_VISTA_BORDER_DOTS.map((d) => ({ name: d.name, position: { ...d.position } })));
+    setSelectedLotPointName(CANYON_VISTA_BORDER_DOTS[0]?.name ?? "");
+  }, []);
+  const copyLotDotsJson = (0, import_react9.useCallback)(async () => {
+    const payload = {
+      borderDots: lotDots,
+      borderLines: CANYON_VISTA_BORDER_LINES
+    };
+    await navigator.clipboard?.writeText(JSON.stringify(payload, null, 2));
+  }, [lotDots]);
   (0, import_react9.useEffect)(() => {
     cameraBoundsRef.current = { yMin: cameraYMin, maxR: cameraMaxRadius };
   }, [cameraYMin, cameraMaxRadius]);
@@ -15193,6 +15281,11 @@ function SogsMigratedViewer({
         LotLinesOverlay,
         {
           enabled: viewerState === "ready" && showLotLines,
+          borderDots: lotDots,
+          editable: developerToolsEnabled,
+          selectedPointName: selectedLotPointName,
+          onPointMove: updateLotDotPosition,
+          onPointSelect: setSelectedLotPointName,
           poseRef,
           containerRef
         }
@@ -15432,6 +15525,97 @@ function SogsMigratedViewer({
         onPlayTour,
         onStopTour,
         pathPlaying
+      }
+    ) : null,
+    developerToolsEnabled ? /* @__PURE__ */ (0, import_jsx_runtime11.jsxs)(
+      "div",
+      {
+        id: "lotLineEditorPanel",
+        className: `lot-editor-panel animation-editor-panel lot-line-editor-panel ${showLotLines ? "active" : ""}`,
+        "aria-live": "polite",
+        "aria-hidden": !showLotLines,
+        "data-testid": "lot-line-editor-panel",
+        children: [
+          /* @__PURE__ */ (0, import_jsx_runtime11.jsxs)("div", { className: "animation-editor-header", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime11.jsx)("div", { className: "lot-editor-title", children: "Lot lines" }),
+            /* @__PURE__ */ (0, import_jsx_runtime11.jsx)("button", { type: "button", className: "animation-editor-close", "aria-label": "Close lot line editor", onClick: () => setShowLotLines(false), children: "\xD7" })
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime11.jsx)("div", { className: "lot-editor-status animation-editor-status-compact", children: toggleDisabled ? "Loading\u2026" : "Drag the white handles in the viewer or edit the selected vertex values." }),
+          /* @__PURE__ */ (0, import_jsx_runtime11.jsxs)("div", { className: "lot-editor-field", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime11.jsx)("label", { htmlFor: "lot-line-point-picker", children: "Vertex" }),
+            /* @__PURE__ */ (0, import_jsx_runtime11.jsx)(
+              "select",
+              {
+                id: "lot-line-point-picker",
+                "data-testid": "lot-line-point-picker",
+                value: selectedLotDot?.name ?? "",
+                disabled: toggleDisabled,
+                onChange: (e) => setSelectedLotPointName(e.target.value),
+                children: lotDots.map((d) => /* @__PURE__ */ (0, import_jsx_runtime11.jsx)("option", { value: d.name, children: d.name }, d.name))
+              }
+            )
+          ] }),
+          selectedLotDot ? /* @__PURE__ */ (0, import_jsx_runtime11.jsxs)("div", { className: "lot-editor-grid lot-line-editor-grid", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime11.jsxs)("div", { className: "lot-editor-field", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime11.jsx)("label", { htmlFor: "lot-line-x", children: "X" }),
+              /* @__PURE__ */ (0, import_jsx_runtime11.jsx)(
+                "input",
+                {
+                  id: "lot-line-x",
+                  "data-testid": "lot-line-x",
+                  type: "number",
+                  step: "0.01",
+                  disabled: toggleDisabled,
+                  value: selectedLotDot.position.x,
+                  onChange: (e) => {
+                    const v = parseFloat(e.target.value);
+                    if (Number.isFinite(v)) updateLotDotPosition(selectedLotDot.name, { ...selectedLotDot.position, x: v });
+                  }
+                }
+              )
+            ] }),
+            /* @__PURE__ */ (0, import_jsx_runtime11.jsxs)("div", { className: "lot-editor-field", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime11.jsx)("label", { htmlFor: "lot-line-y", children: "Y" }),
+              /* @__PURE__ */ (0, import_jsx_runtime11.jsx)(
+                "input",
+                {
+                  id: "lot-line-y",
+                  "data-testid": "lot-line-y",
+                  type: "number",
+                  step: "0.01",
+                  disabled: toggleDisabled,
+                  value: selectedLotDot.position.y,
+                  onChange: (e) => {
+                    const v = parseFloat(e.target.value);
+                    if (Number.isFinite(v)) updateLotDotPosition(selectedLotDot.name, { ...selectedLotDot.position, y: v });
+                  }
+                }
+              )
+            ] }),
+            /* @__PURE__ */ (0, import_jsx_runtime11.jsxs)("div", { className: "lot-editor-field", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime11.jsx)("label", { htmlFor: "lot-line-z", children: "Z" }),
+              /* @__PURE__ */ (0, import_jsx_runtime11.jsx)(
+                "input",
+                {
+                  id: "lot-line-z",
+                  "data-testid": "lot-line-z",
+                  type: "number",
+                  step: "0.01",
+                  disabled: toggleDisabled,
+                  value: selectedLotDot.position.z,
+                  onChange: (e) => {
+                    const v = parseFloat(e.target.value);
+                    if (Number.isFinite(v)) updateLotDotPosition(selectedLotDot.name, { ...selectedLotDot.position, z: v });
+                  }
+                }
+              )
+            ] })
+          ] }) : null,
+          /* @__PURE__ */ (0, import_jsx_runtime11.jsxs)("div", { className: "lot-editor-actions", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime11.jsx)("button", { type: "button", className: "lot-editor-action-btn", disabled: toggleDisabled, onClick: copyLotDotsJson, children: "Copy JSON" }),
+            /* @__PURE__ */ (0, import_jsx_runtime11.jsx)("button", { type: "button", className: "lot-editor-action-btn lot-editor-action-btn-secondary", disabled: toggleDisabled, onClick: resetLotDots, children: "Reset" })
+          ] })
+        ]
       }
     ) : null,
     developerToolsEnabled ? /* @__PURE__ */ (0, import_jsx_runtime11.jsxs)(
