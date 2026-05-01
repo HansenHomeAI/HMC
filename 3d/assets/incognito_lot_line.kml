@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2">
+  <Document>
+    <name>Incognito Primary Lot Boundary</name>
+    <Style id="primaryLotStyle">
+      <LineStyle><color>ff1d22e8</color><width>4</width></LineStyle>
+      <PolyStyle><color>331d22e8</color></PolyStyle>
+    </Style>
+    <Placemark>
+      <name>Incognito Primary Lot Boundary</name>
+      <description>Primary lot boundary for Incognito. Georef mode: relative_0_0. Coordinates are intentionally local placeholders because real world coordinates were not confidently recovered from the provided screenshot.</description>
+      <ExtendedData>
+        <Data name="property_name"><value>Incognito</value></Data>
+        <Data name="georef_mode"><value>relative_0_0</value></Data>
+        <Data name="coordinate_order"><value>longitude,latitude,altitude</value></Data>
+        <Data name="source"><value>visible_red_boundary_from_user_image</value></Data>
+        <Data name="warnings"><value>World coordinates were not confidently recovered; exported coordinates use relative_0_0.</value></Data>
+      </ExtendedData>
+      <styleUrl>#primaryLotStyle</styleUrl>
+      <Polygon>
+        <tessellate>1</tessellate>
+        <outerBoundaryIs>
+          <LinearRing>
+            <coordinates>-0.0043593750,0.0001406250,0 -0.0033828125,0.0008359375,0 -0.0024765625,0.0013046875,0 -0.0011640625,0.0018125000,0 0.0004453125,0.0022890625,0 0.0015625000,0.0023281250,0 0.0031250000,0.0023203125,0 0.0036796875,0.0001796875,0 0.0036171875,-0.0000546875,0 0.0034140625,-0.0002109375,0 0.0023671875,-0.0004375000,0 0.0018281250,-0.0007187500,0 0.0017265625,-0.0011328125,0 0.0021406250,-0.0019765625,0 0.0030781250,-0.0028671875,0 -0.0012343750,-0.0029453125,0 -0.0014218750,-0.0022656250,0 -0.0043593750,0.0001406250,0</coordinates>
+          </LinearRing>
+        </outerBoundaryIs>
+      </Polygon>
+    </Placemark>
+  </Document>
+</kml>

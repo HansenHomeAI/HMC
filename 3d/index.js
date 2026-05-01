@@ -7560,10 +7560,10 @@ function roundLotCoord(n) {
   return Math.round(n * 1e3) / 1e3;
 }
 function createDefaultLotLines() {
-  return CANYON_VISTA_BORDER_LINES.map((l) => ({ ...l }));
+  return createDefaultIncognitoLotLineBuild().lines;
 }
 function createDefaultLotDots() {
-  return CANYON_VISTA_BORDER_DOTS.map((d) => ({ name: d.name, position: { ...d.position } }));
+  return createDefaultIncognitoLotLineBuild().dots;
 }
 function createNextLotVertexName(dots) {
   const prefix = dots.length > 0 && dots.every((d) => d.name.startsWith("KML_V")) ? "KML_V" : "Lot_V";
@@ -7704,6 +7704,37 @@ function buildLotFromKmlBoundary(boundary, transform) {
   });
   const lines = dots.map((dot, i) => ({ start: dot.name, end: dots[(i + 1) % dots.length].name }));
   return { dots, lines };
+}
+var DEFAULT_INCOGNITO_KML_BOUNDARY = {
+  fileName: "incognito_lot_line.kml",
+  rawPoints: [
+    { x: -447.45421874350995, z: 49.65664062500001 },
+    { x: -338.74328124508673, z: 126.51648437500002 },
+    { x: -237.85953124654998, z: 178.33210937500002 },
+    { x: -91.75203124866916, z: 234.465703125 },
+    { x: 87.4035937487323, z: 287.144921875 },
+    { x: 211.76890624692848, z: 291.462890625 },
+    { x: 385.7064062444056, z: 290.599296875 },
+    { x: 447.45421874350995, z: 53.974609375 },
+    { x: 440.4967187436109, z: 28.06679687500001 },
+    { x: 417.8848437439389, z: 10.794921875000007 },
+    { x: 301.3467187456292, z: -14.249296874999995 },
+    { x: 241.3382812464996, z: -45.338671874999996 },
+    { x: 230.0323437466636, z: -91.10914062499998 },
+    { x: 276.12578124599503, z: -184.377265625 },
+    { x: 380.4882812444813, z: -282.826953125 },
+    { x: -99.57921874855563, z: -291.462890625 },
+    { x: -120.45171874825289, z: -216.33023437499995 }
+  ],
+  autoScale: 0.002,
+  pointCount: 17,
+  sourceCenter: { lon: -0.0003398437500000003, lat: -0.00030859375000000006 },
+  sourceKind: "Polygon outerBoundaryIs",
+  sourceArea: 0.000027693756103515627
+};
+var DEFAULT_INCOGNITO_KML_TRANSFORM = { ...DEFAULT_KML_LOT_TRANSFORM, scale: DEFAULT_INCOGNITO_KML_BOUNDARY.autoScale };
+function createDefaultIncognitoLotLineBuild() {
+  return buildLotFromKmlBoundary(DEFAULT_INCOGNITO_KML_BOUNDARY, DEFAULT_INCOGNITO_KML_TRANSFORM);
 }
 if (typeof window !== "undefined") {
   window.__meadowKmlLotImporter = { parseKmlLotBoundary, buildLotFromKmlBoundary };
@@ -14830,10 +14861,10 @@ function SogsMigratedViewer({
   const [showSoldLabels, setShowSoldLabels] = (0, import_react9.useState)(false);
   const [lotDots, setLotDots] = (0, import_react9.useState)(() => createDefaultLotDots());
   const [lotLines, setLotLines] = (0, import_react9.useState)(() => createDefaultLotLines());
-  const [kmlBoundary, setKmlBoundary] = (0, import_react9.useState)(null);
-  const [kmlTransform, setKmlTransform] = (0, import_react9.useState)(DEFAULT_KML_LOT_TRANSFORM);
-  const [kmlStatus, setKmlStatus] = (0, import_react9.useState)("");
-  const [selectedLotPointName, setSelectedLotPointName] = (0, import_react9.useState)(() => CANYON_VISTA_BORDER_DOTS[0]?.name ?? "");
+  const [kmlBoundary, setKmlBoundary] = (0, import_react9.useState)(DEFAULT_INCOGNITO_KML_BOUNDARY);
+  const [kmlTransform, setKmlTransform] = (0, import_react9.useState)(DEFAULT_INCOGNITO_KML_TRANSFORM);
+  const [kmlStatus, setKmlStatus] = (0, import_react9.useState)(`Loaded ${DEFAULT_INCOGNITO_KML_BOUNDARY.pointCount} Incognito KML vertices around origin.`);
+  const [selectedLotPointName, setSelectedLotPointName] = (0, import_react9.useState)(() => createDefaultLotDots()[0]?.name ?? "");
   const [pathVersion, setPathVersion] = (0, import_react9.useState)(0);
   const [photoDot, setPhotoDot] = (0, import_react9.useState)(null);
   const [pathPanelOpen, setPathPanelOpen] = (0, import_react9.useState)(false);
@@ -14873,12 +14904,12 @@ function SogsMigratedViewer({
     setLotDots((dots) => dots.map((d) => d.name === name ? { ...d, position: { x: roundSplatThousandths(position.x), y: roundSplatThousandths(position.y), z: roundSplatThousandths(position.z) } } : d));
   }, []);
   const resetLotDots = (0, import_react9.useCallback)(() => {
-    setKmlBoundary(null);
-    setKmlTransform(DEFAULT_KML_LOT_TRANSFORM);
-    setKmlStatus("");
+    setKmlBoundary(DEFAULT_INCOGNITO_KML_BOUNDARY);
+    setKmlTransform(DEFAULT_INCOGNITO_KML_TRANSFORM);
+    setKmlStatus(`Loaded ${DEFAULT_INCOGNITO_KML_BOUNDARY.pointCount} Incognito KML vertices around origin.`);
     setLotDots(createDefaultLotDots());
     setLotLines(createDefaultLotLines());
-    setSelectedLotPointName(CANYON_VISTA_BORDER_DOTS[0]?.name ?? "");
+    setSelectedLotPointName(createDefaultLotDots()[0]?.name ?? "");
   }, []);
   const importLotLinesKml = (0, import_react9.useCallback)(async (event) => {
     const file = event.target.files?.[0];

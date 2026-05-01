@@ -15,7 +15,7 @@ Developer tools in the shell (splat position/rotation helpers) are **on by defau
 
 ## KML lot-line import
 
-Open the lot-line editor, choose a `.kml` file from the KML field, then use **Scale**, **Center X/Y/Z**, and **Rotation** to align the imported boundary around the splat. KML coordinates are treated as relative geometry and centered around the viewer origin because the splat does not currently carry real-world coordinates.
+The viewer now defaults to the bundled Incognito lot boundary from `3d/assets/incognito_lot_line.kml`. Open the lot-line editor to inspect it, or choose another `.kml` file from the KML field, then use **Scale**, **Center X/Y/Z**, and **Rotation** to align the imported boundary around the splat. KML coordinates are treated as relative geometry and centered around the viewer origin because the splat does not currently carry real-world coordinates.
 
 The importer prefers `Polygon > outerBoundaryIs > LinearRing > coordinates`, ignores inner holes, supports namespaced KML tags, and falls back to closed `LinearRing`/coordinate blocks when no Polygon is present. Run `npm run test:kml` to check the regression cases.
 

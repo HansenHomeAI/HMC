@@ -12,11 +12,11 @@ const sandbox = { console };
 vm.createContext(sandbox);
 vm.runInContext(
   `${source.slice(start, end)}
-  globalThis.__kmlLotImporter = { parseKmlLotBoundary, buildLotFromKmlBoundary };`,
+  globalThis.__kmlLotImporter = { parseKmlLotBoundary, buildLotFromKmlBoundary, createDefaultLotDots, createDefaultLotLines, DEFAULT_INCOGNITO_KML_BOUNDARY };`,
   sandbox
 );
 
-const { parseKmlLotBoundary, buildLotFromKmlBoundary } = sandbox.__kmlLotImporter;
+const { parseKmlLotBoundary, buildLotFromKmlBoundary, createDefaultLotDots, createDefaultLotLines, DEFAULT_INCOGNITO_KML_BOUNDARY } = sandbox.__kmlLotImporter;
 
 function manyLinePoints(count) {
   return Array.from({ length: count }, (_, i) => `${-111 + i * 0.00001},45.${String(i).padStart(3, "0")},0`).join(" ");
@@ -83,6 +83,20 @@ function manyLinePoints(count) {
   assert.equal(built.lines.at(-1).start, "KML_V4");
   assert.equal(built.lines.at(-1).end, "KML_V1");
   assert.ok(built.dots.every((d) => Number.isFinite(d.position.x) && Number.isFinite(d.position.y) && Number.isFinite(d.position.z)));
+}
+
+{
+  const kml = fs.readFileSync(new URL("../3d/assets/incognito_lot_line.kml", import.meta.url), "utf8");
+  const boundary = parseKmlLotBoundary(kml, "incognito_lot_line.kml");
+  const defaultDots = createDefaultLotDots();
+  const defaultLines = createDefaultLotLines();
+  assert.equal(boundary.pointCount, 17, "Incognito bundled KML should parse all true lot vertices");
+  assert.equal(boundary.sourceKind, "Polygon outerBoundaryIs");
+  assert.equal(DEFAULT_INCOGNITO_KML_BOUNDARY.pointCount, boundary.pointCount);
+  assert.equal(defaultDots.length, 17, "Default lot line should come from the Incognito KML boundary");
+  assert.equal(defaultLines.length, 17, "Default lot line should be a closed Incognito loop");
+  assert.equal(defaultLines.at(-1).start, "KML_V17");
+  assert.equal(defaultLines.at(-1).end, "KML_V1");
 }
 
 console.log("KML importer regression checks passed.");
