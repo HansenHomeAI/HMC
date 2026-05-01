@@ -118,5 +118,10 @@ assert.match(source, /var DEFAULT_INCOGNITO_KML_URL = "assets\/incognito_lot_lin
 assert.match(source, /var DEFAULT_KML_LOT_TRANSFORM = \{ x: 0, y: 0, z: 0, scale: 1, rotation: 0 \};/, "Default KML should sit high enough to be visible before manual Y adjustment");
 assert.match(source, /const \[showLotLines, setShowLotLines\] = \(0, import_react9\.useState\)\(true\);/, "Lot lines should be visible by default");
 assert.match(source, /fetch\(tapDotAssetUrl\(DEFAULT_INCOGNITO_KML_URL\)\)/, "The bundled KML file should be imported at runtime, not only hardcoded");
+assert.match(source, /id: "lot-line-kml-scale"[\s\S]*?step: "0\.0001"/, "KML scale spinner should use fine 0.0001 increments");
+for (const id of ["lot-line-kml-x", "lot-line-kml-y", "lot-line-kml-z", "lot-line-x", "lot-line-y", "lot-line-z"]) {
+  assert.match(source, new RegExp(`id: "${id}"[\\s\\S]*?step: "0\\.001"`), `${id} spinner should use fine 0.001 unit increments`);
+}
+assert.match(source, /id: "lot-line-kml-rotation"[\s\S]*?step: "0\.1"/, "KML rotation spinner should use fine 0.1 degree increments");
 
 console.log("KML importer regression checks passed.");

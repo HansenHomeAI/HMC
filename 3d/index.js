@@ -15923,35 +15923,35 @@ function SogsMigratedViewer({
           kmlBoundary ? /* @__PURE__ */ (0, import_jsx_runtime11.jsxs)("div", { className: "lot-editor-grid lot-line-editor-grid", children: [
             /* @__PURE__ */ (0, import_jsx_runtime11.jsxs)("div", { className: "lot-editor-field", children: [
               /* @__PURE__ */ (0, import_jsx_runtime11.jsx)("label", { htmlFor: "lot-line-kml-scale", children: "Scale" }),
-              /* @__PURE__ */ (0, import_jsx_runtime11.jsx)("input", { id: "lot-line-kml-scale", "data-testid": "lot-line-kml-scale", type: "number", step: "0.01", disabled: toggleDisabled, value: kmlTransform.scale, onChange: (e) => {
+              /* @__PURE__ */ (0, import_jsx_runtime11.jsx)("input", { id: "lot-line-kml-scale", "data-testid": "lot-line-kml-scale", type: "number", step: "0.0001", disabled: toggleDisabled, value: kmlTransform.scale, onChange: (e) => {
                 const v = parseFloat(e.target.value);
                 if (Number.isFinite(v)) updateKmlTransform({ scale: v });
               } })
             ] }),
             /* @__PURE__ */ (0, import_jsx_runtime11.jsxs)("div", { className: "lot-editor-field", children: [
               /* @__PURE__ */ (0, import_jsx_runtime11.jsx)("label", { htmlFor: "lot-line-kml-x", children: "Center X" }),
-              /* @__PURE__ */ (0, import_jsx_runtime11.jsx)("input", { id: "lot-line-kml-x", "data-testid": "lot-line-kml-x", type: "number", step: "0.01", disabled: toggleDisabled, value: kmlTransform.x, onChange: (e) => {
+              /* @__PURE__ */ (0, import_jsx_runtime11.jsx)("input", { id: "lot-line-kml-x", "data-testid": "lot-line-kml-x", type: "number", step: "0.001", disabled: toggleDisabled, value: kmlTransform.x, onChange: (e) => {
                 const v = parseFloat(e.target.value);
                 if (Number.isFinite(v)) updateKmlTransform({ x: v });
               } })
             ] }),
             /* @__PURE__ */ (0, import_jsx_runtime11.jsxs)("div", { className: "lot-editor-field", children: [
               /* @__PURE__ */ (0, import_jsx_runtime11.jsx)("label", { htmlFor: "lot-line-kml-z", children: "Center Z" }),
-              /* @__PURE__ */ (0, import_jsx_runtime11.jsx)("input", { id: "lot-line-kml-z", "data-testid": "lot-line-kml-z", type: "number", step: "0.01", disabled: toggleDisabled, value: kmlTransform.z, onChange: (e) => {
+              /* @__PURE__ */ (0, import_jsx_runtime11.jsx)("input", { id: "lot-line-kml-z", "data-testid": "lot-line-kml-z", type: "number", step: "0.001", disabled: toggleDisabled, value: kmlTransform.z, onChange: (e) => {
                 const v = parseFloat(e.target.value);
                 if (Number.isFinite(v)) updateKmlTransform({ z: v });
               } })
             ] }),
             /* @__PURE__ */ (0, import_jsx_runtime11.jsxs)("div", { className: "lot-editor-field", children: [
               /* @__PURE__ */ (0, import_jsx_runtime11.jsx)("label", { htmlFor: "lot-line-kml-y", children: "Center Y" }),
-              /* @__PURE__ */ (0, import_jsx_runtime11.jsx)("input", { id: "lot-line-kml-y", "data-testid": "lot-line-kml-y", type: "number", step: "0.01", disabled: toggleDisabled, value: kmlTransform.y, onChange: (e) => {
+              /* @__PURE__ */ (0, import_jsx_runtime11.jsx)("input", { id: "lot-line-kml-y", "data-testid": "lot-line-kml-y", type: "number", step: "0.001", disabled: toggleDisabled, value: kmlTransform.y, onChange: (e) => {
                 const v = parseFloat(e.target.value);
                 if (Number.isFinite(v)) updateKmlTransform({ y: v });
               } })
             ] }),
             /* @__PURE__ */ (0, import_jsx_runtime11.jsxs)("div", { className: "lot-editor-field", children: [
               /* @__PURE__ */ (0, import_jsx_runtime11.jsx)("label", { htmlFor: "lot-line-kml-rotation", children: "Rotation" }),
-              /* @__PURE__ */ (0, import_jsx_runtime11.jsx)("input", { id: "lot-line-kml-rotation", "data-testid": "lot-line-kml-rotation", type: "number", step: "1", disabled: toggleDisabled, value: kmlTransform.rotation, onChange: (e) => {
+              /* @__PURE__ */ (0, import_jsx_runtime11.jsx)("input", { id: "lot-line-kml-rotation", "data-testid": "lot-line-kml-rotation", type: "number", step: "0.1", disabled: toggleDisabled, value: kmlTransform.rotation, onChange: (e) => {
                 const v = parseFloat(e.target.value);
                 if (Number.isFinite(v)) updateKmlTransform({ rotation: v });
               } })
@@ -15980,7 +15980,7 @@ function SogsMigratedViewer({
                   id: "lot-line-x",
                   "data-testid": "lot-line-x",
                   type: "number",
-                  step: "0.01",
+                  step: "0.001",
                   disabled: toggleDisabled,
                   value: selectedLotDot.position.x,
                   onChange: (e) => {
@@ -15998,7 +15998,7 @@ function SogsMigratedViewer({
                   id: "lot-line-y",
                   "data-testid": "lot-line-y",
                   type: "number",
-                  step: "0.01",
+                  step: "0.001",
                   disabled: toggleDisabled,
                   value: selectedLotDot.position.y,
                   onChange: (e) => {
@@ -16016,7 +16016,7 @@ function SogsMigratedViewer({
                   id: "lot-line-z",
                   "data-testid": "lot-line-z",
                   type: "number",
-                  step: "0.01",
+                  step: "0.001",
                   disabled: toggleDisabled,
                   value: selectedLotDot.position.z,
                   onChange: (e) => {
