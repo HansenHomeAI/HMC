@@ -19,6 +19,12 @@ The viewer now defaults to the bundled Incognito lot boundary from `3d/assets/in
 
 The importer prefers `Polygon > outerBoundaryIs > LinearRing > coordinates`, ignores inner holes, supports namespaced KML tags, and falls back to closed `LinearRing`/coordinate blocks when no Polygon is present. Run `npm run test:kml` to check the regression cases.
 
+## Tap-dot photos
+
+Tap dots are on by default. The example dots are configured in `3d/index.js` under `CANYON_VISTA_TAP_DOTS`, and the sample image assets live in `3d/assets/tapdots/`.
+
+Each dot has a world `position`, a `caption`, and a `photos` array. Photo entries can be repo-local paths like `assets/tapdots/front-entry.svg`, root-relative paths like `/media/front.webp`, or full remote URLs like `https://media.example.com/incognito/front.webp`.
+
 ## Repo structure
 
 - `3d/`: shell app

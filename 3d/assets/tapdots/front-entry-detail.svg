@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1000" viewBox="0 0 1600 1000">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#e2dfd2"/><stop offset="1" stop-color="#eef3f0"/></linearGradient>
+    <linearGradient id="ground" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#3d3830"/><stop offset="1" stop-color="#1d241f"/></linearGradient>
+  </defs>
+  <rect width="1600" height="620" fill="url(#sky)"/>
+  <path d="M0 460 C220 320 360 360 520 420 C720 500 840 290 1050 370 C1230 440 1370 250 1600 340 L1600 650 L0 650 Z" fill="#6f7f79" opacity=".65"/>
+  <path d="M0 575 C230 520 340 610 510 570 C710 520 860 650 1080 560 C1280 480 1430 570 1600 520 L1600 1000 L0 1000 Z" fill="url(#ground)"/>
+  <path d="M390 610 L620 450 L860 615 Z" fill="#2c2823"/>
+  <rect x="430" y="610" width="390" height="180" fill="#5b5146"/>
+  <rect x="555" y="665" width="80" height="125" fill="#211f1d"/>
+  <rect x="675" y="650" width="90" height="80" fill="#90a6b8" opacity=".78"/>
+  <path d="M300 900 C520 730 700 770 910 650 C1110 540 1280 560 1600 420 L1600 1000 L300 1000 Z" fill="#cfc5b2" opacity=".55"/>
+  <text x="70" y="110" font-family="Helvetica, Arial, sans-serif" font-size="56" font-weight="700" fill="#fff">Front Detail</text>
+  <text x="74" y="168" font-family="Helvetica, Arial, sans-serif" font-size="30" fill="rgba(255,255,255,.88)">Secondary front entry detail demo image</text>
+</svg>

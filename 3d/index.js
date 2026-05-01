@@ -7454,53 +7454,32 @@ var CANYON_VISTA_CAMERA_WORLD_BOUNDS = {
 };
 
 // lib/canyon-vista/canyonVistaOverlays.ts
-var CANYON_VISTA_REMOTE_BASE = "https://raw.githubusercontent.com/HansenHomeAI/Canyon-Vista/main";
-function canyonAssetUrl(relativePath) {
-  const p = relativePath.startsWith("/") ? relativePath.slice(1) : relativePath;
-  return `${CANYON_VISTA_REMOTE_BASE}/${p}`;
+function tapDotAssetUrl(pathOrUrl) {
+  const value = String(pathOrUrl || "").trim();
+  if (!value) return "";
+  if (/^(https?:|data:|blob:)/i.test(value)) return value;
+  if (value.startsWith("/")) return value;
+  return `./${value.replace(/^\.?\//, "")}`;
 }
 var CANYON_VISTA_TAP_DOTS = [
   {
-    position: { x: -0.193602, y: -0.057, z: 0.341913 },
+    position: { x: -0.42, y: -0.04, z: -0.18 },
     scale: 0.225,
     icon: "camera",
-    caption: "Playground",
+    caption: "Front Entry",
     photos: [
-      "assets/playground/playground-01.jpg",
-      "assets/playground/playground-02.jpg",
-      "assets/playground/playground-03.jpg",
-      "assets/playground/playground-04.jpg",
-      "assets/playground/playground-05.jpg",
-      "assets/playground/playground-06.jpg"
+      "assets/tapdots/front-entry.svg",
+      "assets/tapdots/front-entry-detail.svg"
     ]
   },
   {
-    position: { x: 0.455091, y: -0.057, z: 0.414509 },
+    position: { x: 0.22, y: -0.045, z: 0.18 },
     scale: 0.225,
     icon: "camera",
-    caption: "Pool Area",
+    caption: "Mountain Lawn",
     photos: [
-      "assets/pool/pool-01.jpg",
-      "assets/pool/pool-02.jpg",
-      "assets/pool/pool-03.jpg",
-      "assets/pool/pool-04.jpg",
-      "assets/pool/pool-05.jpg",
-      "assets/pool/pool-06.jpg"
-    ]
-  },
-  {
-    position: { x: 0.091675, y: -0.057, z: -0.267314 },
-    scale: 0.225,
-    icon: "camera",
-    caption: "Courtyard Park",
-    photos: [
-      "assets/courtyard-park/courtyard-park-01.jpg",
-      "assets/courtyard-park/courtyard-park-02.jpg",
-      "assets/courtyard-park/courtyard-park-03.jpg",
-      "assets/courtyard-park/courtyard-park-04.jpg",
-      "assets/courtyard-park/courtyard-park-05.jpg",
-      "assets/courtyard-park/courtyard-park-06.jpg",
-      "assets/courtyard-park/courtyard-park-07.jpg"
+      "assets/tapdots/mountain-lawn.svg",
+      "assets/tapdots/mountain-view.svg"
     ]
   }
 ];
@@ -8285,7 +8264,7 @@ function CanyonPhotoModal({ dot, onClose }) {
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [dot, onClose]);
-  const urls = (0, import_react4.useMemo)(() => dot ? dot.photos.map(canyonAssetUrl) : [], [dot]);
+  const urls = (0, import_react4.useMemo)(() => dot ? dot.photos.map(tapDotAssetUrl) : [], [dot]);
   const src = urls[idx] ?? urls[0];
   const multi = urls.length > 1;
   const goTo = (0, import_react4.useCallback)(
@@ -14856,7 +14835,7 @@ function SogsMigratedViewer({
   const [bootMode, setBootMode] = (0, import_react9.useState)("default");
   const [pathPlaying, setPathPlaying] = (0, import_react9.useState)(false);
   const [autoRotate, setAutoRotate] = (0, import_react9.useState)(CANYON_VISTA_ORBIT.autoRotateDefault);
-  const [showTapDots, setShowTapDots] = (0, import_react9.useState)(false);
+  const [showTapDots, setShowTapDots] = (0, import_react9.useState)(true);
   const [showLotLines, setShowLotLines] = (0, import_react9.useState)(false);
   const [showSoldLabels, setShowSoldLabels] = (0, import_react9.useState)(false);
   const [lotDots, setLotDots] = (0, import_react9.useState)(() => createDefaultLotDots());
