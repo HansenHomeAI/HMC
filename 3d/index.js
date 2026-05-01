@@ -7577,27 +7577,97 @@ function createNextLotVertexName(dots) {
   return `${prefix}${next}`;
 }
 function parseKmlCoordinateText(text) {
-  return text.trim().split(/\s+/).map((chunk) => {
-    const [lon, lat, alt = "0"] = chunk.split(",");
-    return { lon: Number(lon), lat: Number(lat), alt: Number(alt) };
-  }).filter((p) => Number.isFinite(p.lon) && Number.isFinite(p.lat));
+  const cleaned = decodeKmlText(text).replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, "$1");
+  const number = "[-+]?(?:\\d+\\.?\\d*|\\.\\d+)(?:[eE][-+]?\\d+)?";
+  const coordPattern = new RegExp(`(${number})\\s*,\\s*(${number})(?:\\s*,\\s*(${number}))?`, "g");
+  return Array.from(cleaned.matchAll(coordPattern)).map((match) => ({
+    lon: Number(match[1]),
+    lat: Number(match[2]),
+    alt: match[3] == null ? 0 : Number(match[3])
+  })).filter((p) => Number.isFinite(p.lon) && Number.isFinite(p.lat));
 }
 function pointsNearlyEqual(a, b) {
   return Math.abs(a.lon - b.lon) < 1e-10 && Math.abs(a.lat - b.lat) < 1e-10;
 }
+function decodeKmlText(text) {
+  return String(text || "").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&amp;/g, "&").replace(/&quot;/g, '"').replace(/&apos;/g, "'");
+}
+function getKmlTagBlocks(text, localName) {
+  const pattern = new RegExp(`<((?:[\\w.-]+:)?${localName})\\b[^>]*>([\\s\\S]*?)<\\/\\1>`, "gi");
+  return Array.from(String(text || "").matchAll(pattern)).map((match) => match[2]);
+}
+function getFirstKmlTagBlock(text, localName) {
+  return getKmlTagBlocks(text, localName)[0] || "";
+}
+function cleanKmlCoordinates(coords) {
+  const clean = [];
+  for (const coord of coords) {
+    if (!Number.isFinite(coord.lon) || !Number.isFinite(coord.lat)) continue;
+    if (clean.length && pointsNearlyEqual(clean[clean.length - 1], coord)) continue;
+    clean.push(coord);
+  }
+  if (clean.length > 1 && pointsNearlyEqual(clean[0], clean[clean.length - 1])) {
+    clean.pop();
+  }
+  return clean;
+}
+function getKmlCoordinateTexts(text) {
+  return getKmlTagBlocks(text, "coordinates");
+}
+function getKmlPolygonOuterCoordinateTexts(polygonBlock) {
+  const outer = getFirstKmlTagBlock(polygonBlock, "outerBoundaryIs");
+  if (!outer) return [];
+  const ring = getFirstKmlTagBlock(outer, "LinearRing") || outer;
+  return getKmlCoordinateTexts(ring);
+}
+function getKmlLonLatArea(coords) {
+  let area = 0;
+  for (let i = 0; i < coords.length; i++) {
+    const a = coords[i];
+    const b = coords[(i + 1) % coords.length];
+    area += a.lon * b.lat - b.lon * a.lat;
+  }
+  return Math.abs(area) / 2;
+}
+function createKmlBoundaryCandidate(coords, sourceKind, sourcePriority) {
+  const clean = cleanKmlCoordinates(coords);
+  if (clean.length < 3) return null;
+  const area = getKmlLonLatArea(clean);
+  if (!Number.isFinite(area) || area <= 1e-18) return null;
+  return { coords: clean, sourceKind, sourcePriority, area };
+}
+function collectKmlBoundaryCandidates(text) {
+  const candidates = [];
+  for (const polygon of getKmlTagBlocks(text, "Polygon")) {
+    for (const coordinateText of getKmlPolygonOuterCoordinateTexts(polygon)) {
+      const candidate = createKmlBoundaryCandidate(parseKmlCoordinateText(coordinateText), "Polygon outerBoundaryIs", 2);
+      if (candidate) candidates.push(candidate);
+    }
+  }
+  if (candidates.length) return candidates;
+  for (const ring of getKmlTagBlocks(text, "LinearRing")) {
+    for (const coordinateText of getKmlCoordinateTexts(ring)) {
+      const candidate = createKmlBoundaryCandidate(parseKmlCoordinateText(coordinateText), "LinearRing", 1);
+      if (candidate) candidates.push(candidate);
+    }
+  }
+  if (candidates.length) return candidates;
+  for (const coordinateText of getKmlCoordinateTexts(text)) {
+    const candidate = createKmlBoundaryCandidate(parseKmlCoordinateText(coordinateText), "coordinates", 0);
+    if (candidate) candidates.push(candidate);
+  }
+  return candidates;
+}
 function parseKmlLotBoundary(text, fileName = "KML") {
-  const doc = new DOMParser().parseFromString(text, "application/xml");
-  if (doc.querySelector("parsererror")) {
+  if (!String(text || "").trim() || !/<(?:[\w.-]+:)?kml\b|<(?:[\w.-]+:)?Document\b|<(?:[\w.-]+:)?Placemark\b|<(?:[\w.-]+:)?coordinates\b/i.test(text)) {
     throw new Error("Could not read this KML file.");
   }
-  const candidates = Array.from(doc.getElementsByTagName("coordinates")).map((node) => parseKmlCoordinateText(node.textContent || "")).filter((coords) => coords.length >= 4).map((coords) => {
-    const clean = pointsNearlyEqual(coords[0], coords[coords.length - 1]) ? coords.slice(0, -1) : coords;
-    return clean;
-  }).filter((coords) => coords.length >= 3);
+  const candidates = collectKmlBoundaryCandidates(text);
   if (!candidates.length) {
     throw new Error("No closed lot boundary coordinates found.");
   }
-  const coords = candidates.sort((a, b) => b.length - a.length)[0];
+  const winner = candidates.sort((a, b) => b.sourcePriority - a.sourcePriority || b.area - a.area || b.coords.length - a.coords.length)[0];
+  const coords = winner.coords;
   const lons = coords.map((p) => p.lon);
   const lats = coords.map((p) => p.lat);
   const centerLon = (Math.min(...lons) + Math.max(...lons)) / 2;
@@ -7616,7 +7686,9 @@ function parseKmlLotBoundary(text, fileName = "KML") {
     rawPoints,
     autoScale: roundLotCoord(1.8 / span),
     pointCount: rawPoints.length,
-    sourceCenter: { lon: centerLon, lat: centerLat }
+    sourceCenter: { lon: centerLon, lat: centerLat },
+    sourceKind: winner.sourceKind,
+    sourceArea: winner.area
   };
 }
 function buildLotFromKmlBoundary(boundary, transform) {
@@ -7632,6 +7704,9 @@ function buildLotFromKmlBoundary(boundary, transform) {
   });
   const lines = dots.map((dot, i) => ({ start: dot.name, end: dots[(i + 1) % dots.length].name }));
   return { dots, lines };
+}
+if (typeof window !== "undefined") {
+  window.__meadowKmlLotImporter = { parseKmlLotBoundary, buildLotFromKmlBoundary };
 }
 var CANYON_VISTA_SOLD_HOTSPOTS = [
   { text: "SOLD", position: { x: 0.22, y: 0.5, z: -0.85 }, scale: 0.2, verticalOffset: 0.06 }

@@ -1,0 +1,88 @@
+import assert from "node:assert/strict";
+import fs from "node:fs";
+import vm from "node:vm";
+
+const source = fs.readFileSync(new URL("../3d/index.js", import.meta.url), "utf8");
+const start = source.indexOf("var DEFAULT_KML_LOT_TRANSFORM");
+const end = source.indexOf("var CANYON_VISTA_SOLD_HOTSPOTS");
+
+assert.ok(start >= 0 && end > start, "Could not locate KML lot importer code in 3d/index.js");
+
+const sandbox = { console };
+vm.createContext(sandbox);
+vm.runInContext(
+  `${source.slice(start, end)}
+  globalThis.__kmlLotImporter = { parseKmlLotBoundary, buildLotFromKmlBoundary };`,
+  sandbox
+);
+
+const { parseKmlLotBoundary, buildLotFromKmlBoundary } = sandbox.__kmlLotImporter;
+
+function manyLinePoints(count) {
+  return Array.from({ length: count }, (_, i) => `${-111 + i * 0.00001},45.${String(i).padStart(3, "0")},0`).join(" ");
+}
+
+{
+  const kml = `<?xml version="1.0"?>
+  <kml><Document>
+    <Placemark><LineString><coordinates>${manyLinePoints(28)}</coordinates></LineString></Placemark>
+    <Placemark><Polygon><outerBoundaryIs><LinearRing><coordinates>
+      -111.001,45.001,0 -111.000,45.001,0 -111.000,45.000,0 -111.001,45.000,0 -111.001,45.001,0
+    </coordinates></LinearRing></outerBoundaryIs></Polygon></Placemark>
+  </Document></kml>`;
+  const boundary = parseKmlLotBoundary(kml, "polygon-vs-line.kml");
+  assert.equal(boundary.pointCount, 4, "polygon outer ring should win over longer LineString coordinates");
+  assert.equal(boundary.sourceKind, "Polygon outerBoundaryIs");
+}
+
+{
+  const kml = `<?xml version="1.0"?>
+  <kml:kml xmlns:kml="http://www.opengis.net/kml/2.2"><kml:Document>
+    <kml:Placemark><kml:Polygon><kml:outerBoundaryIs><kml:LinearRing><kml:coordinates>
+      -111.002,45.002,0
+      -111.000,45.002,0
+      -111.000,45.000,0
+      -111.002,45.000,0
+      -111.002,45.002,0
+    </kml:coordinates></kml:LinearRing></kml:outerBoundaryIs></kml:Polygon></kml:Placemark>
+  </kml:Document></kml:kml>`;
+  const boundary = parseKmlLotBoundary(kml, "namespaced.kml");
+  assert.equal(boundary.pointCount, 4, "namespaced KML polygons should parse");
+}
+
+{
+  const kml = `<?xml version="1.0"?>
+  <kml><Document><Placemark><Polygon>
+    <outerBoundaryIs><LinearRing><coordinates>
+      -111.004,45.004,0 -111.000,45.004,0 -111.000,45.000,0 -111.004,45.000,0 -111.004,45.004,0
+    </coordinates></LinearRing></outerBoundaryIs>
+    <innerBoundaryIs><LinearRing><coordinates>
+      -111.0035,45.0035,0 -111.003,45.0037,0 -111.0025,45.0035,0 -111.002,45.003,0
+      -111.0025,45.0025,0 -111.003,45.0023,0 -111.0035,45.0025,0 -111.0037,45.003,0 -111.0035,45.0035,0
+    </coordinates></LinearRing></innerBoundaryIs>
+  </Polygon></Placemark></Document></kml>`;
+  const boundary = parseKmlLotBoundary(kml, "hole.kml");
+  assert.equal(boundary.pointCount, 4, "innerBoundaryIs holes should not be imported as the lot line");
+}
+
+{
+  const kml = `<?xml version="1.0"?>
+  <kml><Document><Placemark><MultiGeometry>
+    <Polygon><outerBoundaryIs><LinearRing><coordinates>
+      -111.001,45.001,0 -111.0005,45.001,0 -111.0005,45.0005,0 -111.001,45.0005,0 -111.001,45.001,0
+    </coordinates></LinearRing></outerBoundaryIs></Polygon>
+    <Polygon><outerBoundaryIs><LinearRing><coordinates>
+      -111.010,45.010,0 -111.000,45.010,0 -111.000,45.000,0 -111.010,45.000,0 -111.010,45.010,0
+    </coordinates></LinearRing></outerBoundaryIs></Polygon>
+  </MultiGeometry></Placemark></Document></kml>`;
+  const boundary = parseKmlLotBoundary(kml, "multigeometry.kml");
+  const built = buildLotFromKmlBoundary(boundary, { x: 0.25, y: -0.2, z: -0.5, scale: boundary.autoScale, rotation: 15 });
+  assert.equal(boundary.pointCount, 4, "largest Polygon in MultiGeometry should be selected");
+  assert.equal(built.dots.length, 4);
+  assert.equal(built.lines.length, 4);
+  assert.equal(built.lines.at(-1).start, "KML_V4");
+  assert.equal(built.lines.at(-1).end, "KML_V1");
+  assert.ok(built.dots.every((d) => Number.isFinite(d.position.x) && Number.isFinite(d.position.y) && Number.isFinite(d.position.z)));
+}
+
+console.log("KML importer regression checks passed.");
