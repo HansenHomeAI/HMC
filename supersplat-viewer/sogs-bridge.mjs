@@ -31,7 +31,8 @@ const BRIDGE_WAIT_TIMEOUT_MS = 60e3;
  * on Immediate so they composite after the splat and stay visible.
  */
 const LAYER_ID_IMMEDIATE = 3;
-const LOCAL_Y = new Vec3(0, 1, 0);
+const WORLD_UP = { x: 0, y: 1, z: 0 };
+const WORLD_FORWARD = { x: 0, y: 0, z: 1 };
 
 function lotLineWorldY(baseY) {
   return baseY + LOT_LINE_Y_OFFSET;
@@ -386,6 +387,71 @@ function normalizeLotLineDimension(value, fallback) {
   return Number.isFinite(n) ? Math.max(1e-3, Math.min(0.08, n)) : fallback;
 }
 
+function dot3(a, b) {
+  return a.x * b.x + a.y * b.y + a.z * b.z;
+}
+
+function cross3(a, b) {
+  return {
+    x: a.y * b.z - a.z * b.y,
+    y: a.z * b.x - a.x * b.z,
+    z: a.x * b.y - a.y * b.x,
+  };
+}
+
+function normalize3(v) {
+  const len = Math.hypot(v.x, v.y, v.z);
+  if (!Number.isFinite(len) || len <= 1e-8) {
+    return null;
+  }
+  return { x: v.x / len, y: v.y / len, z: v.z / len };
+}
+
+function projectAxisOffDirection(axis, dir) {
+  const dot = dot3(axis, dir);
+  return normalize3({
+    x: axis.x - dir.x * dot,
+    y: axis.y - dir.y * dot,
+    z: axis.z - dir.z * dot,
+  });
+}
+
+function quatFromBasis(xAxis, yAxis, zAxis) {
+  const m00 = xAxis.x;
+  const m01 = xAxis.y;
+  const m02 = xAxis.z;
+  const m10 = yAxis.x;
+  const m11 = yAxis.y;
+  const m12 = yAxis.z;
+  const m20 = zAxis.x;
+  const m21 = zAxis.y;
+  const m22 = zAxis.z;
+  const q = new Quat();
+  if (m22 < 0) {
+    if (m00 > m11) {
+      q.set(1 + m00 - m11 - m22, m01 + m10, m20 + m02, m12 - m21);
+    } else {
+      q.set(m01 + m10, 1 - m00 + m11 - m22, m12 + m21, m20 - m02);
+    }
+  } else if (m00 < -m11) {
+    q.set(m20 + m02, m12 + m21, 1 - m00 - m11 + m22, m01 - m10);
+  } else {
+    q.set(m12 - m21, m20 - m02, m01 - m10, 1 + m00 + m11 + m22);
+  }
+  return q.normalize();
+}
+
+function stableLotLineRotation(dir) {
+  const yAxis = normalize3(dir) ?? WORLD_UP;
+  let zAxis = projectAxisOffDirection(WORLD_UP, yAxis);
+  if (!zAxis) {
+    zAxis = projectAxisOffDirection(WORLD_FORWARD, yAxis) ?? WORLD_FORWARD;
+  }
+  const xAxis = normalize3(cross3(yAxis, zAxis)) ?? { x: 1, y: 0, z: 0 };
+  zAxis = normalize3(cross3(xAxis, yAxis)) ?? zAxis;
+  return quatFromBasis(xAxis, yAxis, zAxis);
+}
+
 function lotLineMaterial(style = normalizeLotLineStyle()) {
   const m = new StandardMaterial();
   const rgb = style.rgb ?? parseHexColor(LOT_LINE_DEFAULT_COLOR);
@@ -592,7 +658,7 @@ function setupSogsLotLines(app) {
     const dir = new Vec3(dx / len, dy / len, dz / len);
     const ent = new Entity(`lotLine:${seg.start}:${seg.end}`, app);
     ent.setLocalPosition((a.x + b.x) / 2, (a.y + b.y) / 2, (a.z + b.z) / 2);
-    ent.setLocalRotation(new Quat().setFromDirections(LOCAL_Y, dir));
+    ent.setLocalRotation(stableLotLineRotation(dir));
     ent.setLocalScale(style.width, len, style.height);
     const mi = new MeshInstance(mesh, mat, ent);
     ent.addComponent("render", {
