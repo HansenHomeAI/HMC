@@ -7309,6 +7309,77 @@ function getSogsDeveloperToolsEnabled() {
   }
   return true;
 }
+function legacyCopyTextToClipboard(text) {
+  if (typeof document === "undefined" || !document.body) {
+    return false;
+  }
+  let eventCopied = false;
+  const onCopy = (event) => {
+    if (!event.clipboardData) return;
+    event.preventDefault();
+    event.clipboardData.setData("text/plain", text);
+    eventCopied = true;
+  };
+  const textarea = document.createElement("textarea");
+  textarea.value = text;
+  textarea.setAttribute("readonly", "");
+  textarea.style.position = "absolute";
+  textarea.style.left = "-10000px";
+  textarea.style.top = "0";
+  textarea.style.width = "1px";
+  textarea.style.height = "1px";
+  document.body.appendChild(textarea);
+  textarea.focus();
+  textarea.select();
+  textarea.setSelectionRange(0, textarea.value.length);
+  let copied = false;
+  try {
+    document.addEventListener("copy", onCopy, true);
+    copied = document.execCommand("copy");
+  } catch {
+    copied = false;
+  } finally {
+    document.removeEventListener("copy", onCopy, true);
+  }
+  document.body.removeChild(textarea);
+  return eventCopied || copied;
+}
+async function copyTextToClipboard(text) {
+  if (await copyTextWithLocalDevBridge(text)) {
+    return;
+  }
+  if (legacyCopyTextToClipboard(text)) {
+    return;
+  }
+  if (typeof navigator !== "undefined" && navigator.clipboard?.writeText) {
+    try {
+      await navigator.clipboard.writeText(text);
+      return;
+    } catch (error2) {
+      throw error2;
+    }
+  }
+  throw new Error("Clipboard copy failed");
+}
+async function copyTextWithLocalDevBridge(text) {
+  if (typeof window === "undefined" || typeof fetch !== "function") {
+    return false;
+  }
+  const host = window.location.hostname;
+  if (host !== "localhost" && host !== "127.0.0.1") {
+    return false;
+  }
+  try {
+    const res = await fetch("/__meadow/clipboard", {
+      method: "POST",
+      headers: { "content-type": "text/plain;charset=utf-8" },
+      body: text
+    });
+    return res.ok;
+  } catch {
+    return false;
+  }
+}
 
 // lib/sogsViewerBundle.ts
 var PROXY_HOSTS = /* @__PURE__ */ new Set([
@@ -14903,6 +14974,7 @@ function SogsMigratedViewer({
       roundSplatThousandths(d.scale)
     );
   });
+  const [lotCopyFeedback, setLotCopyFeedback] = (0, import_react9.useState)(null);
   const [splatCopyFeedback, setSplatCopyFeedback] = (0, import_react9.useState)(null);
   const [skyboxRotation, setSkyboxRotation] = (0, import_react9.useState)([...SOGS_DEFAULT_SKYBOX_ROTATION]);
   const [skyboxRotStr, setSkyboxRotStr] = (0, import_react9.useState)(() => formatSkyboxRotStrFromNums([...SOGS_DEFAULT_SKYBOX_ROTATION]));
@@ -15040,7 +15112,15 @@ function SogsMigratedViewer({
       kmlTransform: kmlBoundary ? kmlTransform : null,
       source: kmlBoundary ? { type: "kml", fileName: kmlBoundary.fileName, coordinateMode: "relative_0_0" } : { type: "default" }
     };
-    await navigator.clipboard?.writeText(JSON.stringify(payload, null, 2));
+    const text = JSON.stringify(payload, null, 2);
+    try {
+      await copyTextToClipboard(text);
+      setLotCopyFeedback(`Copied ${lotDots.length} vertices`);
+    } catch (error2) {
+      console.error("Lot line JSON copy failed", error2);
+      setLotCopyFeedback("Copy failed");
+    }
+    window.setTimeout(() => setLotCopyFeedback(null), 2e3);
   }, [lotDots, lotLines, kmlBoundary, kmlTransform]);
   (0, import_react9.useEffect)(() => {
     cameraBoundsRef.current = { yMin: cameraYMin, maxR: cameraMaxRadius };
@@ -16036,7 +16116,8 @@ function SogsMigratedViewer({
           /* @__PURE__ */ (0, import_jsx_runtime11.jsxs)("div", { className: "lot-editor-actions", children: [
             /* @__PURE__ */ (0, import_jsx_runtime11.jsx)("button", { type: "button", className: "lot-editor-action-btn", disabled: toggleDisabled, onClick: copyLotDotsJson, children: "Copy JSON" }),
             /* @__PURE__ */ (0, import_jsx_runtime11.jsx)("button", { type: "button", className: "lot-editor-action-btn lot-editor-action-btn-secondary", disabled: toggleDisabled, onClick: resetLotDots, children: "Reset" })
-          ] })
+          ] }),
+          lotCopyFeedback ? /* @__PURE__ */ (0, import_jsx_runtime11.jsx)("p", { className: "animation-path-copy-feedback", "data-testid": "lot-line-copy-feedback", children: lotCopyFeedback }) : null
         ]
       }
     ) : null,

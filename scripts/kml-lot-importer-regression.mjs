@@ -123,6 +123,12 @@ assert.match(source, /"aria-hidden": !lotLineEditorOpen/, "Lot line editor aria-
 assert.match(source, /"aria-label": "Toggle lot line editor"/, "Toolbar button should toggle the editor, not the rendered line visibility");
 assert.match(source, /LotLinesOverlay[\s\S]*?enabled: viewerState === "ready" && showLotLines[\s\S]*?editable: lotLineEditorOpen/, "Lot line drag handles and add-vertex controls should only show when the lot line editor is open");
 assert.doesNotMatch(source, /LotLinesOverlay[\s\S]*?enabled: viewerState === "ready" && showLotLines[\s\S]*?editable: developerToolsEnabled/, "Global dev tools should not expose lot line edit affordances unless the lot line editor is open");
+assert.match(source, /function copyTextToClipboard\(text\)/, "Lot line JSON copy should use the shared clipboard helper");
+assert.match(source, /function legacyCopyTextToClipboard\(text\)/, "Lot line JSON copy should have a legacy fallback when clipboard permission fails");
+assert.match(source, /function copyTextWithLocalDevBridge\(text\)/, "Lot line JSON copy should use the local dev clipboard bridge when available");
+assert.match(source, /fetch\("\/__meadow\/clipboard"/, "Lot line JSON copy should post to the local clipboard bridge on localhost");
+assert.match(source, /const \[lotCopyFeedback, setLotCopyFeedback\]/, "Lot line JSON copy should show success or failure feedback");
+assert.match(source, /setLotCopyFeedback\(`Copied \$\{lotDots\.length\} vertices`\)/, "Lot line JSON copy feedback should confirm the copied vertex count");
 assert.match(source, /fetch\(tapDotAssetUrl\(DEFAULT_INCOGNITO_KML_URL\)\)/, "The bundled KML file should be imported at runtime, not only hardcoded");
 assert.match(source, /id: "lot-line-kml-scale"[\s\S]*?step: "0\.0001"/, "KML scale spinner should use fine 0.0001 increments");
 for (const id of ["lot-line-kml-x", "lot-line-kml-y", "lot-line-kml-z", "lot-line-x", "lot-line-y", "lot-line-z"]) {
