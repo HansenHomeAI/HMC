@@ -71,6 +71,8 @@ if (!tapDotsOverlay.includes("requestIdleCallback") || !tapDotsOverlay.includes(
 const tapDotBubbleCss = css.match(/\.tapdot-label-bubble \{[\s\S]*?\n\}/)?.[0] || "";
 const tapDotCameraCss = css.match(/\.tapdot-label-bubble \.tapdot-camera-icon \{[\s\S]*?\n\}/)?.[0] || "";
 const tapDotCameraSizeCss = css.match(/\.tapdot-label-bubble\.has-camera \{[\s\S]*?\n\}/)?.[0] || "";
+const tapDotPhotoCss = css.match(/\.tapdot-popup \.tapdot-photo \{[\s\S]*?\n\}/)?.[0] || "";
+const tapDotPhotoFadeCss = css.match(/\.tapdot-popup \.tapdot-photo\.fade \{[\s\S]*?\n\}/)?.[0] || "";
 
 if (!tapDotBubbleCss.includes("gap: 6px;") || !tapDotBubbleCss.includes("padding: 7px 12px;")) {
   throw new Error("Tap dot pills should keep the original compact spacing.");
@@ -82,6 +84,18 @@ if (tapDotBubbleCss.includes("min-height: 40px;")) {
 
 if (!tapDotCameraCss.includes("margin-right: -2px;") || !tapDotCameraSizeCss.includes("--tapdot-camera-size: 24px;")) {
   throw new Error("Tap dot camera icon spacing should match the original compact pill layout.");
+}
+
+if (!tapDotPhotoCss.includes("cubic-bezier(0.22, 1, 0.36, 1)") || !tapDotPhotoCss.includes("filter 240ms")) {
+  throw new Error("Tap dot photo transitions should use a subtle premium easing across opacity, transform, and filter.");
+}
+
+if (!tapDotPhotoCss.includes("will-change: opacity, transform, filter;")) {
+  throw new Error("Tap dot photo transitions should hint the animated properties for smoother gallery movement.");
+}
+
+if (!tapDotPhotoFadeCss.includes("opacity: 0.18;") || !tapDotPhotoFadeCss.includes("translate3d(10px, 0, 0)") || !tapDotPhotoFadeCss.includes("blur(3px)")) {
+  throw new Error("Tap dot photo fade state should be a subtle fade/slide/soften transition instead of a hard disappearance.");
 }
 
 console.log("Tap dot overlay regression checks passed.");
