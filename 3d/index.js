@@ -15645,7 +15645,7 @@ function SogsMigratedViewer({
           enabled: viewerState === "ready" && showLotLines,
           borderDots: lotDots,
           borderLines: lotLines,
-          editable: developerToolsEnabled,
+          editable: lotLineEditorOpen,
           selectedPointName: selectedLotPointName,
           onPointMove: updateLotDotPosition,
           onPointSelect: setSelectedLotPointName,
