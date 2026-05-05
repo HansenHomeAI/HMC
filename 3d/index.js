@@ -7553,7 +7553,7 @@ var CANYON_VISTA_TAP_DOTS = [
     icon: "camera",
     caption: "Front Entry",
     minDistance: 0.06,
-    maxDistance: 50,
+    maxVisibleDistance: 1.45,
     photos: [
       "assets/tapdots/front-entry.svg",
       "assets/tapdots/front-entry-detail.svg"
@@ -7565,7 +7565,7 @@ var CANYON_VISTA_TAP_DOTS = [
     icon: "camera",
     caption: "Mountain Lawn",
     minDistance: 0.06,
-    maxDistance: 50,
+    maxVisibleDistance: 1.65,
     photos: [
       "assets/tapdots/mountain-lawn.svg",
       "assets/tapdots/mountain-view.svg"
@@ -14634,7 +14634,7 @@ var import_react7 = __toESM(require_react(), 1);
 var import_jsx_runtime9 = __toESM(require_jsx_runtime(), 1);
 var TAPDOT_CAMERA_ICON = "https://raw.githubusercontent.com/HansenHomeAI/WhiteCameraIcon/main/3TestIcons-9.png";
 var TAP_DOT_DEFAULT_MIN_DISTANCE = 0.04;
-var TAP_DOT_DEFAULT_MAX_DISTANCE = 50;
+var TAP_DOT_DEFAULT_MAX_VISIBLE_DISTANCE = 1.65;
 var TAP_DOT_DEFAULT_FADE_DISTANCE = 0.16;
 function tapDotDistanceOpacity(distance, minDistance, maxDistance, fadeDistance) {
   if (!Number.isFinite(distance)) return 0;
@@ -14643,6 +14643,13 @@ function tapDotDistanceOpacity(distance, minDistance, maxDistance, fadeDistance)
   const nearOpacity = Math.min(1, (distance - minDistance) / fade);
   const farOpacity = Math.min(1, (maxDistance - distance) / fade);
   return Math.max(0, Math.min(1, nearOpacity, farOpacity));
+}
+function tapDotMaxVisibleDistance(tapDot) {
+  const explicit = Number(tapDot?.maxVisibleDistance);
+  if (Number.isFinite(explicit) && explicit > 0) return explicit;
+  const legacy = Number(tapDot?.maxDistance);
+  if (Number.isFinite(legacy) && legacy > 0) return legacy;
+  return TAP_DOT_DEFAULT_MAX_VISIBLE_DISTANCE;
 }
 function tapDotScreenCoord(value) {
   const n = Number(value);
@@ -14674,7 +14681,7 @@ function TapDotsOverlay({ enabled, tapDots, iframeRef, containerRef, onOpenPhoto
           const y = Number(p?.y) || 0;
           const distance = Number(p?.distance);
           const minDistance = Number.isFinite(td.minDistance) ? td.minDistance : TAP_DOT_DEFAULT_MIN_DISTANCE;
-          const maxDistance = Number.isFinite(td.maxDistance) ? td.maxDistance : TAP_DOT_DEFAULT_MAX_DISTANCE;
+          const maxDistance = tapDotMaxVisibleDistance(td);
           const fadeDistance = Number.isFinite(td.fadeDistance) ? td.fadeDistance : TAP_DOT_DEFAULT_FADE_DISTANCE;
           const opacity = tapDotDistanceOpacity(distance, minDistance, maxDistance, fadeDistance);
           const visible = p?.visible === true && opacity > 0.02 && x >= 0 && x <= w && y >= 0 && y <= h;
