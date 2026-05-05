@@ -7797,7 +7797,7 @@ var DEFAULT_INCOGNITO_KML_BOUNDARY = {
   sourceKind: "Polygon outerBoundaryIs",
   sourceArea: 0.000027693756103515627
 };
-var DEFAULT_INCOGNITO_KML_TRANSFORM = { ...DEFAULT_KML_LOT_TRANSFORM, scale: DEFAULT_INCOGNITO_KML_BOUNDARY.autoScale };
+var DEFAULT_INCOGNITO_KML_TRANSFORM = { ...DEFAULT_KML_LOT_TRANSFORM, x: 0.061, y: -0.074, z: -0.174, scale: 0.00105, rotation: 11.2 };
 function createDefaultIncognitoLotLineBuild() {
   return buildLotFromKmlBoundary(DEFAULT_INCOGNITO_KML_BOUNDARY, DEFAULT_INCOGNITO_KML_TRANSFORM);
 }
@@ -15043,7 +15043,7 @@ function SogsMigratedViewer({
         }
         const boundary = parseKmlLotBoundary(await response.text(), "incognito_lot_line.kml");
         if (cancelled || userImportedKmlRef.current) return;
-        const transform = { ...DEFAULT_KML_LOT_TRANSFORM, scale: boundary.autoScale };
+        const transform = DEFAULT_INCOGNITO_KML_TRANSFORM;
         const built = buildLotFromKmlBoundary(boundary, transform);
         setKmlBoundary(boundary);
         setKmlTransform(transform);

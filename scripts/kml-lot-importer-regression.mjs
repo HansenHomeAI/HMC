@@ -111,12 +111,17 @@ function manyLinePoints(count) {
   assert.deepEqual(DEFAULT_INCOGNITO_KML_BOUNDARY.rawPoints, boundary.rawPoints, "Bundled fallback KML boundary should match the parser orientation");
   assert.equal(defaultDots.length, 17, "Default lot line should come from the Incognito KML boundary");
   assert.equal(defaultLines.length, 17, "Default lot line should be a closed Incognito loop");
+  assert.equal(JSON.stringify(defaultDots[0].position), JSON.stringify({ x: -0.39, y: -0.074, z: -0.316 }), "Default lot line should use the saved aligned JSON position for KML_V1");
+  assert.equal(JSON.stringify(defaultDots[14].position), JSON.stringify({ x: 0.395, y: -0.074, z: 0.195 }), "Default lot line should use the saved aligned JSON position for KML_V15");
+  assert.equal(JSON.stringify(defaultDots[16].position), JSON.stringify({ x: -0.107, y: -0.074, z: 0.024 }), "Default lot line should use the saved aligned JSON position for KML_V17");
   assert.equal(defaultLines.at(-1).start, "KML_V17");
   assert.equal(defaultLines.at(-1).end, "KML_V1");
 }
 
 assert.match(source, /var DEFAULT_INCOGNITO_KML_URL = "assets\/incognito_lot_line\.kml";/, "Default Incognito KML asset path should be explicit in the app");
 assert.match(source, /var DEFAULT_KML_LOT_TRANSFORM = \{ x: 0, y: 0, z: 0, scale: 1, rotation: 0 \};/, "Default KML should sit high enough to be visible before manual Y adjustment");
+assert.match(source, /var DEFAULT_INCOGNITO_KML_TRANSFORM = \{ \.\.\.DEFAULT_KML_LOT_TRANSFORM, x: 0\.061, y: -0\.074, z: -0\.174, scale: 0\.00105, rotation: 11\.2 \};/, "Default Incognito KML should use the user's saved aligned transform");
+assert.match(source, /const transform = DEFAULT_INCOGNITO_KML_TRANSFORM;/, "Bundled Incognito KML reload should preserve the saved aligned transform");
 assert.match(source, /const \[showLotLines, setShowLotLines\] = \(0, import_react9\.useState\)\(true\);/, "Lot lines should be visible by default");
 assert.match(source, /const \[lotLineEditorOpen, setLotLineEditorOpen\] = \(0, import_react9\.useState\)\(false\);/, "Lot line editor should not open just because lot lines are visible");
 assert.match(source, /className: `lot-editor-panel animation-editor-panel lot-line-editor-panel \$\{lotLineEditorOpen \? "active" : ""\}`/, "Lot line editor panel visibility should be controlled separately from rendered lot lines");
