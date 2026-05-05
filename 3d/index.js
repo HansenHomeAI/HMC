@@ -7553,7 +7553,7 @@ var CANYON_VISTA_TAP_DOTS = [
     icon: "camera",
     caption: "Front Entry",
     minDistance: 0.06,
-    maxVisibleDistance: 1.45,
+    maxVisibleDistance: 1.2,
     photos: [
       "assets/tapdots/front-entry.svg",
       "assets/tapdots/front-entry-detail.svg"
@@ -7565,7 +7565,7 @@ var CANYON_VISTA_TAP_DOTS = [
     icon: "camera",
     caption: "Mountain Lawn",
     minDistance: 0.06,
-    maxVisibleDistance: 1.65,
+    maxVisibleDistance: 1.35,
     photos: [
       "assets/tapdots/mountain-lawn.svg",
       "assets/tapdots/mountain-view.svg"
@@ -14634,8 +14634,9 @@ var import_react7 = __toESM(require_react(), 1);
 var import_jsx_runtime9 = __toESM(require_jsx_runtime(), 1);
 var TAPDOT_CAMERA_ICON = "https://raw.githubusercontent.com/HansenHomeAI/WhiteCameraIcon/main/3TestIcons-9.png";
 var TAP_DOT_DEFAULT_MIN_DISTANCE = 0.04;
-var TAP_DOT_DEFAULT_MAX_VISIBLE_DISTANCE = 1.65;
+var TAP_DOT_DEFAULT_MAX_VISIBLE_DISTANCE = 1.35;
 var TAP_DOT_DEFAULT_FADE_DISTANCE = 0.16;
+var TAP_DOT_OPACITY_ANIMATION_MS = 220;
 function tapDotDistanceOpacity(distance, minDistance, maxDistance, fadeDistance) {
   if (!Number.isFinite(distance)) return 0;
   if (distance < minDistance || distance > maxDistance) return 0;
@@ -14651,14 +14652,25 @@ function tapDotMaxVisibleDistance(tapDot) {
   if (Number.isFinite(legacy) && legacy > 0) return legacy;
   return TAP_DOT_DEFAULT_MAX_VISIBLE_DISTANCE;
 }
+function tapDotAnimatedOpacity(current, target, deltaMs) {
+  const from = Number.isFinite(current) ? Math.max(0, Math.min(1, current)) : target;
+  const to = Number.isFinite(target) ? Math.max(0, Math.min(1, target)) : 0;
+  const step = Math.max(0, Number(deltaMs) || 0) / TAP_DOT_OPACITY_ANIMATION_MS;
+  if (Math.abs(to - from) <= step) return to;
+  return from + Math.sign(to - from) * step;
+}
 function tapDotScreenCoord(value) {
   const n = Number(value);
   return Number.isFinite(n) ? Math.round(n * 100) / 100 : 0;
 }
 function TapDotsOverlay({ enabled, tapDots, iframeRef, containerRef, onOpenPhotos }) {
   const buttonRefs = (0, import_react7.useRef)([]);
+  const opacityRefs = (0, import_react7.useRef)([]);
+  const lastTickRef = (0, import_react7.useRef)(null);
   (0, import_react7.useEffect)(() => {
     if (!enabled) {
+      opacityRefs.current = [];
+      lastTickRef.current = null;
       for (const button of buttonRefs.current) {
         if (button) {
           button.style.display = "none";
@@ -14667,7 +14679,10 @@ function TapDotsOverlay({ enabled, tapDots, iframeRef, containerRef, onOpenPhoto
       return;
     }
     let raf = 0;
-    const tick = () => {
+    const tick = (now) => {
+      const previousTick = lastTickRef.current;
+      const deltaMs = previousTick == null ? 16.7 : Math.min(80, Math.max(0, now - previousTick));
+      lastTickRef.current = now;
       const el = containerRef.current;
       const projectWorldPoint = iframeRef.current?.contentWindow?.__sogsProjectWorldPoint;
       if (el && typeof projectWorldPoint === "function") {
@@ -14683,10 +14698,13 @@ function TapDotsOverlay({ enabled, tapDots, iframeRef, containerRef, onOpenPhoto
           const minDistance = Number.isFinite(td.minDistance) ? td.minDistance : TAP_DOT_DEFAULT_MIN_DISTANCE;
           const maxDistance = tapDotMaxVisibleDistance(td);
           const fadeDistance = Number.isFinite(td.fadeDistance) ? td.fadeDistance : TAP_DOT_DEFAULT_FADE_DISTANCE;
-          const opacity = tapDotDistanceOpacity(distance, minDistance, maxDistance, fadeDistance);
-          const visible = p?.visible === true && opacity > 0.02 && x >= 0 && x <= w && y >= 0 && y <= h;
+          const targetOpacity = tapDotDistanceOpacity(distance, minDistance, maxDistance, fadeDistance);
+          const previousOpacity = opacityRefs.current[i] ?? targetOpacity;
+          const animatedOpacity = tapDotAnimatedOpacity(previousOpacity, targetOpacity, deltaMs);
+          opacityRefs.current[i] = animatedOpacity;
+          const visible = p?.visible === true && animatedOpacity > 0.02 && x >= 0 && x <= w && y >= 0 && y <= h;
           button.style.transform = `translate3d(${tapDotScreenCoord(x)}px, ${tapDotScreenCoord(y)}px, 0) translate(-50%, -100%)`;
-          button.style.opacity = String(opacity);
+          button.style.opacity = String(animatedOpacity);
           button.style.display = visible ? "inline-flex" : "none";
           button.setAttribute("aria-hidden", visible ? "false" : "true");
         });
@@ -14696,6 +14714,8 @@ function TapDotsOverlay({ enabled, tapDots, iframeRef, containerRef, onOpenPhoto
             button.style.display = "none";
           }
         }
+        opacityRefs.current = [];
+        lastTickRef.current = null;
       }
       raf = requestAnimationFrame(tick);
     };

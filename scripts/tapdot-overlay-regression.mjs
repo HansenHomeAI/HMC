@@ -21,11 +21,11 @@ if (!source.includes("TAP_DOT_DEFAULT_MAX_VISIBLE_DISTANCE") || !source.includes
   throw new Error("TapDotsOverlay must include distance limits/fade behavior.");
 }
 
-if (!source.includes("var TAP_DOT_DEFAULT_MAX_VISIBLE_DISTANCE = 1.65;")) {
+if (!source.includes("var TAP_DOT_DEFAULT_MAX_VISIBLE_DISTANCE = 1.35;")) {
   throw new Error("Tap dot default max visible distance must stay close enough to declutter zoomed-out views.");
 }
 
-const tapDotMaxVisibleDistanceMatches = source.match(/maxVisibleDistance: 1\.(45|65)/g) || [];
+const tapDotMaxVisibleDistanceMatches = source.match(/maxVisibleDistance: 1\.(2|35)/g) || [];
 if (tapDotMaxVisibleDistanceMatches.length < 2) {
   throw new Error("Bundled tap dots must use explicit per-dot max visible distances.");
 }
