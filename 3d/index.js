@@ -7523,6 +7523,16 @@ var CANYON_VISTA_CAMERA_WORLD_BOUNDS = {
   yMin: 0,
   maxRadiusFromOrigin: 50
 };
+var DEFAULT_LOT_LINE_STYLE = { color: "#eaffdb", thickness: 0.01 };
+function normalizeLotLineHex(value) {
+  const raw = String(value ?? "").trim();
+  const match = raw.match(/^#?([0-9a-fA-F]{6})$/);
+  return match ? `#${match[1].toLowerCase()}` : null;
+}
+function normalizeLotLineThickness(value) {
+  const n = Number(value);
+  return Number.isFinite(n) ? Math.max(1e-3, Math.min(0.08, roundSplatThousandths(n))) : DEFAULT_LOT_LINE_STYLE.thickness;
+}
 
 // lib/canyon-vista/canyonVistaOverlays.ts
 function tapDotAssetUrl(pathOrUrl) {
@@ -14948,6 +14958,8 @@ function SogsMigratedViewer({
   const [showSoldLabels, setShowSoldLabels] = (0, import_react9.useState)(false);
   const [lotDots, setLotDots] = (0, import_react9.useState)(() => createDefaultLotDots());
   const [lotLines, setLotLines] = (0, import_react9.useState)(() => createDefaultLotLines());
+  const [lotLineStyle, setLotLineStyle] = (0, import_react9.useState)(DEFAULT_LOT_LINE_STYLE);
+  const [lotLineColorText, setLotLineColorText] = (0, import_react9.useState)(DEFAULT_LOT_LINE_STYLE.color);
   const [kmlBoundary, setKmlBoundary] = (0, import_react9.useState)(DEFAULT_INCOGNITO_KML_BOUNDARY);
   const [kmlTransform, setKmlTransform] = (0, import_react9.useState)(DEFAULT_INCOGNITO_KML_TRANSFORM);
   const [kmlStatus, setKmlStatus] = (0, import_react9.useState)(`Loaded ${DEFAULT_INCOGNITO_KML_BOUNDARY.pointCount} Incognito KML vertices around origin.`);
@@ -15109,6 +15121,7 @@ function SogsMigratedViewer({
     const payload = {
       borderDots: lotDots,
       borderLines: lotLines,
+      style: lotLineStyle,
       kmlTransform: kmlBoundary ? kmlTransform : null,
       source: kmlBoundary ? { type: "kml", fileName: kmlBoundary.fileName, coordinateMode: "relative_0_0" } : { type: "default" }
     };
@@ -15121,7 +15134,7 @@ function SogsMigratedViewer({
       setLotCopyFeedback("Copy failed");
     }
     window.setTimeout(() => setLotCopyFeedback(null), 2e3);
-  }, [lotDots, lotLines, kmlBoundary, kmlTransform]);
+  }, [lotDots, lotLines, lotLineStyle, kmlBoundary, kmlTransform]);
   (0, import_react9.useEffect)(() => {
     cameraBoundsRef.current = { yMin: cameraYMin, maxR: cameraMaxRadius };
   }, [cameraYMin, cameraMaxRadius]);
@@ -15450,12 +15463,13 @@ function SogsMigratedViewer({
   (0, import_react9.useEffect)(() => {
     if (viewerState !== "ready") return;
     postToWindow(iframeRef.current?.contentWindow, {
+      style: lotLineStyle,
       type: "sogs:lotLines",
       enabled: showLotLines,
       dots: lotDots,
       lines: lotLines
     });
-  }, [showLotLines, lotDots, lotLines, viewerState]);
+  }, [showLotLines, lotDots, lotLines, lotLineStyle, viewerState]);
   (0, import_react9.useEffect)(() => {
     if (viewerState !== "ready") return;
     const yMin = roundSplatThousandths(cameraYMin);
@@ -16056,6 +16070,31 @@ function SogsMigratedViewer({
                 children: lotDots.map((d) => /* @__PURE__ */ (0, import_jsx_runtime11.jsx)("option", { value: d.name, children: d.name }, d.name))
               }
             )
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime11.jsxs)("div", { className: "lot-editor-grid lot-line-style-grid", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime11.jsxs)("div", { className: "lot-editor-field", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime11.jsx)("label", { htmlFor: "lot-line-thickness", children: "Thickness" }),
+              /* @__PURE__ */ (0, import_jsx_runtime11.jsx)("input", { id: "lot-line-thickness", "data-testid": "lot-line-thickness", type: "number", min: "0.001", max: "0.08", step: "0.001", disabled: toggleDisabled, value: lotLineStyle.thickness, onChange: (e) => {
+                setLotLineStyle((style) => ({ ...style, thickness: normalizeLotLineThickness(e.target.value) }));
+              } })
+            ] }),
+            /* @__PURE__ */ (0, import_jsx_runtime11.jsxs)("div", { className: "lot-editor-field lot-editor-field-color", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime11.jsx)("label", { htmlFor: "lot-line-color-hex", children: "Hex" }),
+              /* @__PURE__ */ (0, import_jsx_runtime11.jsxs)("div", { className: "lot-line-color-row", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime11.jsx)("input", { id: "lot-line-color-hex", "data-testid": "lot-line-color-hex", type: "text", inputMode: "text", spellCheck: false, disabled: toggleDisabled, value: lotLineColorText, onChange: (e) => {
+                  setLotLineColorText(e.target.value);
+                  const color = normalizeLotLineHex(e.target.value);
+                  if (color) setLotLineStyle((style) => ({ ...style, color }));
+                } }),
+                /* @__PURE__ */ (0, import_jsx_runtime11.jsx)("input", { "aria-label": "Lot line color", className: "lot-line-color-swatch", type: "color", disabled: toggleDisabled, value: lotLineStyle.color, onChange: (e) => {
+                  const color = normalizeLotLineHex(e.target.value);
+                  if (color) {
+                    setLotLineColorText(color);
+                    setLotLineStyle((style) => ({ ...style, color }));
+                  }
+                } })
+              ] })
+            ] })
           ] }),
           selectedLotDot ? /* @__PURE__ */ (0, import_jsx_runtime11.jsxs)("div", { className: "lot-editor-grid lot-line-editor-grid", children: [
             /* @__PURE__ */ (0, import_jsx_runtime11.jsxs)("div", { className: "lot-editor-field", children: [

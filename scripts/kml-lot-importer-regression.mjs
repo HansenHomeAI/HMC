@@ -3,6 +3,7 @@ import fs from "node:fs";
 import vm from "node:vm";
 
 const source = fs.readFileSync(new URL("../3d/index.js", import.meta.url), "utf8");
+const bridgeSource = fs.readFileSync(new URL("../supersplat-viewer/sogs-bridge.mjs", import.meta.url), "utf8");
 const start = source.indexOf("var DEFAULT_KML_LOT_TRANSFORM");
 const end = source.indexOf("var CANYON_VISTA_SOLD_HOTSPOTS");
 
@@ -129,6 +130,15 @@ assert.match(source, /function copyTextWithLocalDevBridge\(text\)/, "Lot line JS
 assert.match(source, /fetch\("\/__meadow\/clipboard"/, "Lot line JSON copy should post to the local clipboard bridge on localhost");
 assert.match(source, /const \[lotCopyFeedback, setLotCopyFeedback\]/, "Lot line JSON copy should show success or failure feedback");
 assert.match(source, /setLotCopyFeedback\(`Copied \$\{lotDots\.length\} vertices`\)/, "Lot line JSON copy feedback should confirm the copied vertex count");
+assert.match(source, /var DEFAULT_LOT_LINE_STYLE = \{ color: "#eaffdb", thickness: 0\.01 \};/, "Lot lines should have a default editable color and thickness");
+assert.match(source, /style: lotLineStyle/, "Lot line JSON copy should include the editable style");
+assert.match(source, /id: "lot-line-thickness"[\s\S]*?step: "0\.001"/, "Lot line thickness should have a fine numeric editor");
+assert.match(source, /const \[lotLineColorText, setLotLineColorText\]/, "Lot line color text input should allow typing partial hex values");
+assert.match(source, /id: "lot-line-color-hex"[\s\S]*?value: lotLineColorText/, "Lot line color should have a hex text editor");
+assert.match(source, /style: lotLineStyle[\s\S]*?type: "sogs:lotLines"/, "Rendered lot lines should receive the editable style");
+assert.match(bridgeSource, /window\.__sogsLotLineStyle = normalizeLotLineStyle\(d\.style\);/, "Iframe lot line renderer should accept posted style");
+assert.match(bridgeSource, /function parseHexColor\(hex\)/, "Iframe lot line renderer should parse hex colors");
+assert.match(bridgeSource, /buildUnitCylinderMesh\(app, style\.thickness\)/, "Iframe lot line renderer should rebuild mesh with requested thickness");
 assert.match(source, /fetch\(tapDotAssetUrl\(DEFAULT_INCOGNITO_KML_URL\)\)/, "The bundled KML file should be imported at runtime, not only hardcoded");
 assert.match(source, /id: "lot-line-kml-scale"[\s\S]*?step: "0\.0001"/, "KML scale spinner should use fine 0.0001 increments");
 for (const id of ["lot-line-kml-x", "lot-line-kml-y", "lot-line-kml-z", "lot-line-x", "lot-line-y", "lot-line-z"]) {

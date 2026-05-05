@@ -21,6 +21,7 @@ const AXIS_LEN = 10;
 /** Cylinder radius (÷10 vs prior 0.05 for skinnier rods). */
 const AXIS_RADIUS = 0.005;
 const LOT_LINE_RADIUS = 0.01;
+const LOT_LINE_DEFAULT_COLOR = "#eaffdb";
 const LOT_LINE_Y_OFFSET = 0.08;
 const MAIN_BOOT_TIMEOUT_MS = 60e3;
 const BRIDGE_WAIT_TIMEOUT_MS = 60e3;
@@ -353,10 +354,34 @@ function axisMaterial(rgb) {
   return m;
 }
 
-function lotLineMaterial() {
+function parseHexColor(hex) {
+  const match = String(hex ?? "").trim().match(/^#?([0-9a-fA-F]{6})$/);
+  if (!match) {
+    return null;
+  }
+  const value = match[1];
+  return [
+    parseInt(value.slice(0, 2), 16) / 255,
+    parseInt(value.slice(2, 4), 16) / 255,
+    parseInt(value.slice(4, 6), 16) / 255,
+  ];
+}
+
+function normalizeLotLineStyle(style) {
+  const rgb = parseHexColor(style?.color) ?? parseHexColor(LOT_LINE_DEFAULT_COLOR);
+  const thickness = Number(style?.thickness);
+  return {
+    color: style?.color && parseHexColor(style.color) ? style.color : LOT_LINE_DEFAULT_COLOR,
+    rgb,
+    thickness: Number.isFinite(thickness) ? Math.max(1e-3, Math.min(0.08, thickness)) : LOT_LINE_RADIUS,
+  };
+}
+
+function lotLineMaterial(style = normalizeLotLineStyle()) {
   const m = new StandardMaterial();
-  m.diffuse = new Color(0.92, 1, 0.86);
-  m.emissive = new Color(0.72, 0.96, 0.52);
+  const rgb = style.rgb ?? parseHexColor(LOT_LINE_DEFAULT_COLOR);
+  m.diffuse = new Color(rgb[0], rgb[1], rgb[2]);
+  m.emissive = new Color(rgb[0], rgb[1], rgb[2]);
   m.emissiveIntensity = 0.7;
   m.useLighting = false;
   return m;
@@ -539,8 +564,9 @@ function setupSogsLotLines(app) {
     }
   }
 
-  const mesh = buildUnitCylinderMesh(app);
-  const mat = lotLineMaterial();
+  const style = normalizeLotLineStyle(window.__sogsLotLineStyle);
+  const mesh = buildUnitCylinderMesh(app, style.thickness);
+  const mat = lotLineMaterial(style);
   const root = new Entity("sogsLotLines", app);
   app.root.addChild(root);
 
@@ -676,6 +702,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         window.__sogsLotLinesEnabled = !!d.enabled;
         window.__sogsLotLineDots = Array.isArray(d.dots) ? d.dots : [];
         window.__sogsLotLineSegments = Array.isArray(d.lines) ? d.lines : [];
+        window.__sogsLotLineStyle = normalizeLotLineStyle(d.style);
         syncSogsLotLines(app);
       }
       if (d.type === "sogs:requestState") {

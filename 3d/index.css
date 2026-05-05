@@ -436,6 +436,25 @@
   margin-top: 8px;
   margin-bottom: 8px;
 }
+.lot-line-style-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
+  gap: 8px;
+  margin-top: 8px;
+  margin-bottom: 8px;
+}
+.lot-line-color-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 34px;
+  gap: 6px;
+  align-items: center;
+}
+.lot-editor-field input.lot-line-color-swatch {
+  width: 34px;
+  height: 34px;
+  padding: 2px;
+  cursor: pointer;
+}
 .animation-editor-summary {
   margin: 0 0 4px;
   font-size: 10px;
