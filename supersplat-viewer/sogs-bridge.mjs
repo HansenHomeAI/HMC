@@ -20,7 +20,8 @@ const tmpLotFar = new Vec3();
 const AXIS_LEN = 10;
 /** Cylinder radius (÷10 vs prior 0.05 for skinnier rods). */
 const AXIS_RADIUS = 0.005;
-const LOT_LINE_RADIUS = 0.01;
+const LOT_LINE_DEFAULT_WIDTH = 0.01;
+const LOT_LINE_DEFAULT_HEIGHT = 0.003;
 const LOT_LINE_DEFAULT_COLOR = "#eaffdb";
 const LOT_LINE_Y_OFFSET = 0.08;
 const MAIN_BOOT_TIMEOUT_MS = 60e3;
@@ -369,12 +370,20 @@ function parseHexColor(hex) {
 
 function normalizeLotLineStyle(style) {
   const rgb = parseHexColor(style?.color) ?? parseHexColor(LOT_LINE_DEFAULT_COLOR);
-  const thickness = Number(style?.thickness);
+  const legacyThickness = Number(style?.thickness);
+  const fallbackWidth = Number.isFinite(legacyThickness) ? legacyThickness : LOT_LINE_DEFAULT_WIDTH;
+  const fallbackHeight = Number.isFinite(legacyThickness) ? legacyThickness : LOT_LINE_DEFAULT_HEIGHT;
   return {
     color: style?.color && parseHexColor(style.color) ? style.color : LOT_LINE_DEFAULT_COLOR,
     rgb,
-    thickness: Number.isFinite(thickness) ? Math.max(1e-3, Math.min(0.08, thickness)) : LOT_LINE_RADIUS,
+    width: normalizeLotLineDimension(style?.width, fallbackWidth),
+    height: normalizeLotLineDimension(style?.height, fallbackHeight),
   };
+}
+
+function normalizeLotLineDimension(value, fallback) {
+  const n = Number(value);
+  return Number.isFinite(n) ? Math.max(1e-3, Math.min(0.08, n)) : fallback;
 }
 
 function lotLineMaterial(style = normalizeLotLineStyle()) {
@@ -413,7 +422,7 @@ function buildAxisCylinderMesh(app, radius = AXIS_RADIUS) {
   return Mesh.fromGeometry(device, geom);
 }
 
-function buildUnitCylinderMesh(app, radius = LOT_LINE_RADIUS) {
+function buildUnitCylinderMesh(app, radius = 1) {
   const device = app.graphicsDevice;
   const geom = new CylinderGeometry({
     height: 1,
@@ -565,7 +574,7 @@ function setupSogsLotLines(app) {
   }
 
   const style = normalizeLotLineStyle(window.__sogsLotLineStyle);
-  const mesh = buildUnitCylinderMesh(app, style.thickness);
+  const mesh = buildUnitCylinderMesh(app);
   const mat = lotLineMaterial(style);
   const root = new Entity("sogsLotLines", app);
   app.root.addChild(root);
@@ -584,7 +593,7 @@ function setupSogsLotLines(app) {
     const ent = new Entity(`lotLine:${seg.start}:${seg.end}`, app);
     ent.setLocalPosition((a.x + b.x) / 2, (a.y + b.y) / 2, (a.z + b.z) / 2);
     ent.setLocalRotation(new Quat().setFromDirections(LOCAL_Y, dir));
-    ent.setLocalScale(1, len, 1);
+    ent.setLocalScale(style.width, len, style.height);
     const mi = new MeshInstance(mesh, mat, ent);
     ent.addComponent("render", {
       meshInstances: [mi],
