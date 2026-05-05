@@ -26,6 +26,7 @@ const LOT_LINE_DEFAULT_OPACITY = 0.72;
 const LOT_LINE_DEFAULT_COLOR = "#eaffdb";
 const LOT_LINE_Y_OFFSET = 0.08;
 const LOT_LINE_BLEND_NORMAL = 2;
+const LOT_LINE_CULL_NONE = 0;
 const MAIN_BOOT_TIMEOUT_MS = 60e3;
 const BRIDGE_WAIT_TIMEOUT_MS = 60e3;
 /**
@@ -469,6 +470,7 @@ function lotLineMaterial(style = normalizeLotLineStyle()) {
   m.opacity = style.opacity;
   m.blendType = LOT_LINE_BLEND_NORMAL;
   m.depthWrite = style.opacity >= 0.99;
+  m.cull = LOT_LINE_CULL_NONE;
   m.useLighting = false;
   return m;
 }
@@ -672,6 +674,7 @@ function setupSogsLotLines(app) {
     ent.setLocalRotation(stableLotLineRotation(dir));
     ent.setLocalScale(style.width, len, style.height);
     const mi = new MeshInstance(mesh, mat, ent);
+    mi.cull = false;
     ent.addComponent("render", {
       meshInstances: [mi],
       castShadows: false,

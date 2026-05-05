@@ -152,6 +152,9 @@ assert.match(bridgeSource, /opacity: normalizeLotLineOpacity\(style\?\.opacity\)
 assert.match(bridgeSource, /m\.opacity = style\.opacity;/, "Iframe lot line material should apply requested opacity");
 assert.match(bridgeSource, /m\.blendType = LOT_LINE_BLEND_NORMAL;/, "Iframe lot line material should enable alpha blending for opacity");
 assert.match(bridgeSource, /m\.depthWrite = style\.opacity >= 0\.99;/, "Iframe lot line material should avoid depth-writing while semi-transparent");
+assert.match(bridgeSource, /const LOT_LINE_CULL_NONE = 0;/, "Iframe lot line renderer should define a no-cull mode for constant viewing-angle opacity");
+assert.match(bridgeSource, /m\.cull = LOT_LINE_CULL_NONE;/, "Iframe lot line material should be double-sided so opacity is not view-angle dependent");
+assert.match(bridgeSource, /mi\.cull = false;/, "Iframe lot line mesh instances should avoid culling edge cases while lot lines are toggled on");
 assert.match(bridgeSource, /function stableLotLineRotation\(dir\)/, "Iframe lot line renderer should lock oval roll to world-up instead of per-segment arbitrary roll");
 assert.match(bridgeSource, /ent\.setLocalRotation\(stableLotLineRotation\(dir\)\)/, "Iframe lot line renderer should use the stable world-up lot line rotation");
 assert.doesNotMatch(bridgeSource, /setFromDirections\(LOCAL_Y, dir\)/, "Lot line segments should not use setFromDirections because it leaves oval roll unconstrained");
