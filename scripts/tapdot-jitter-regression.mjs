@@ -27,6 +27,7 @@ assert.ok(deltaSpread(oldWholePixel) >= 1, "Whole-pixel rounding baseline should
 assert.ok(deltaSpread(stableSubPixel) <= 0.02, "Sub-pixel tap dot positioning should preserve smooth projected motion");
 
 const bubbleCss = css.match(/\.tapdot-label-bubble \{[\s\S]*?\n\}/)?.[0] || "";
-assert.match(bubbleCss, /will-change: transform, opacity;/, "Tap dot labels should promote transform and opacity updates");
+assert.match(bubbleCss, /transition: none;/, "Tap dot labels should not add CSS opacity easing on top of the fixed-rate JS animation");
+assert.match(bubbleCss, /will-change: transform, opacity, filter;/, "Tap dot labels should promote transform, opacity, and blur updates");
 
 console.log("Tap dot jitter regression checks passed.");

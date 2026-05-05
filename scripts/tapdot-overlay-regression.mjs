@@ -17,8 +17,8 @@ if (tapDotsOverlay.includes("createOverlayPerspectiveCamera") || tapDotsOverlay.
   throw new Error("TapDotsOverlay must not use the old parent-side camera approximation.");
 }
 
-if (!source.includes("TAP_DOT_DEFAULT_MAX_VISIBLE_DISTANCE") || !source.includes("tapDotDistanceOpacity")) {
-  throw new Error("TapDotsOverlay must include distance limits/fade behavior.");
+if (!source.includes("TAP_DOT_DEFAULT_MAX_VISIBLE_DISTANCE") || !source.includes("tapDotTargetOpacity")) {
+  throw new Error("TapDotsOverlay must include distance threshold behavior.");
 }
 
 if (!source.includes("var TAP_DOT_DEFAULT_MAX_VISIBLE_DISTANCE = 1.35;")) {

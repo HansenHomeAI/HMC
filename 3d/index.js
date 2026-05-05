@@ -14635,15 +14635,11 @@ var import_jsx_runtime9 = __toESM(require_jsx_runtime(), 1);
 var TAPDOT_CAMERA_ICON = "https://raw.githubusercontent.com/HansenHomeAI/WhiteCameraIcon/main/3TestIcons-9.png";
 var TAP_DOT_DEFAULT_MIN_DISTANCE = 0.04;
 var TAP_DOT_DEFAULT_MAX_VISIBLE_DISTANCE = 1.35;
-var TAP_DOT_DEFAULT_FADE_DISTANCE = 0.16;
-var TAP_DOT_OPACITY_ANIMATION_MS = 220;
-function tapDotDistanceOpacity(distance, minDistance, maxDistance, fadeDistance) {
+var TAP_DOT_OPACITY_ANIMATION_MS = 500;
+function tapDotTargetOpacity(distance, minDistance, maxDistance) {
   if (!Number.isFinite(distance)) return 0;
   if (distance < minDistance || distance > maxDistance) return 0;
-  const fade = Math.max(0.001, fadeDistance);
-  const nearOpacity = Math.min(1, (distance - minDistance) / fade);
-  const farOpacity = Math.min(1, (maxDistance - distance) / fade);
-  return Math.max(0, Math.min(1, nearOpacity, farOpacity));
+  return 1;
 }
 function tapDotMaxVisibleDistance(tapDot) {
   const explicit = Number(tapDot?.maxVisibleDistance);
@@ -14658,6 +14654,10 @@ function tapDotAnimatedOpacity(current, target, deltaMs) {
   const step = Math.max(0, Number(deltaMs) || 0) / TAP_DOT_OPACITY_ANIMATION_MS;
   if (Math.abs(to - from) <= step) return to;
   return from + Math.sign(to - from) * step;
+}
+function tapDotBlurForOpacity(opacity) {
+  const o = Number.isFinite(opacity) ? Math.max(0, Math.min(1, opacity)) : 0;
+  return Math.round((1 - o) * 6 * 100) / 100;
 }
 function tapDotScreenCoord(value) {
   const n = Number(value);
@@ -14697,14 +14697,14 @@ function TapDotsOverlay({ enabled, tapDots, iframeRef, containerRef, onOpenPhoto
           const distance = Number(p?.distance);
           const minDistance = Number.isFinite(td.minDistance) ? td.minDistance : TAP_DOT_DEFAULT_MIN_DISTANCE;
           const maxDistance = tapDotMaxVisibleDistance(td);
-          const fadeDistance = Number.isFinite(td.fadeDistance) ? td.fadeDistance : TAP_DOT_DEFAULT_FADE_DISTANCE;
-          const targetOpacity = tapDotDistanceOpacity(distance, minDistance, maxDistance, fadeDistance);
-          const previousOpacity = opacityRefs.current[i] ?? targetOpacity;
+          const targetOpacity = tapDotTargetOpacity(distance, minDistance, maxDistance);
+          const previousOpacity = opacityRefs.current[i] ?? 0;
           const animatedOpacity = tapDotAnimatedOpacity(previousOpacity, targetOpacity, deltaMs);
           opacityRefs.current[i] = animatedOpacity;
           const visible = p?.visible === true && animatedOpacity > 0.02 && x >= 0 && x <= w && y >= 0 && y <= h;
           button.style.transform = `translate3d(${tapDotScreenCoord(x)}px, ${tapDotScreenCoord(y)}px, 0) translate(-50%, -100%)`;
           button.style.opacity = String(animatedOpacity);
+          button.style.filter = `blur(${tapDotBlurForOpacity(animatedOpacity)}px)`;
           button.style.display = visible ? "inline-flex" : "none";
           button.setAttribute("aria-hidden", visible ? "false" : "true");
         });
