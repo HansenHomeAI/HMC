@@ -173,6 +173,10 @@ assert.match(bridgeSource, /m\.depthWrite = style\.opacity >= 0\.99;/, "Iframe l
 assert.match(bridgeSource, /const LOT_LINE_CULL_NONE = 0;/, "Iframe lot line renderer should define a no-cull mode for constant viewing-angle opacity");
 assert.match(bridgeSource, /m\.cull = LOT_LINE_CULL_NONE;/, "Iframe lot line material should be double-sided so opacity is not view-angle dependent");
 assert.match(bridgeSource, /mi\.cull = false;/, "Iframe lot line mesh instances should avoid culling edge cases while lot lines are toggled on");
+assert.match(bridgeSource, /function setLotLineRenderLayer\(ent\)/, "Iframe lot line renderer should have a dedicated render-layer helper");
+assert.match(bridgeSource, /ent\.render\.layers = \[LAYER_ID_IMMEDIATE\];/, "Lot line render helper should move meshes to the Immediate layer so gsplat rendering cannot repaint them by viewing angle");
+assert.match(bridgeSource, /mi\.drawOrder = LOT_LINE_DRAW_ORDER;/, "Lot line mesh instances should use a high manual draw order for stable compositing");
+assert.match(bridgeSource, /setLotLineRenderLayer\(ent\);/, "Lot line segments and vertex caps should be assigned to the stable overlay layer");
 assert.match(bridgeSource, /function stableLotLineRotation\(dir\)/, "Iframe lot line renderer should lock oval roll to world-up instead of per-segment arbitrary roll");
 assert.match(bridgeSource, /ent\.setLocalRotation\(stableLotLineRotation\(dir\)\)/, "Iframe lot line renderer should use the stable world-up lot line rotation");
 assert.doesNotMatch(bridgeSource, /setFromDirections\(LOCAL_Y, dir\)/, "Lot line segments should not use setFromDirections because it leaves oval roll unconstrained");

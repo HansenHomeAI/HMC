@@ -27,6 +27,7 @@ const LOT_LINE_DEFAULT_COLOR = "#eaffdb";
 const LOT_LINE_Y_OFFSET = 0.08;
 const LOT_LINE_BLEND_NORMAL = 2;
 const LOT_LINE_CULL_NONE = 0;
+const LOT_LINE_DRAW_ORDER = 0xffffff;
 const MAIN_BOOT_TIMEOUT_MS = 60e3;
 const BRIDGE_WAIT_TIMEOUT_MS = 60e3;
 /**
@@ -486,6 +487,16 @@ function setAxisGuideRenderLayer(ent) {
   }
 }
 
+function setLotLineRenderLayer(ent) {
+  try {
+    if (ent.render) {
+      ent.render.layers = [LAYER_ID_IMMEDIATE];
+    }
+  } catch {
+    /* ignore */
+  }
+}
+
 /**
  * Thin cylinders along local +X / +Y / +Z at the splat origin, parented to gsplat.
  * Uses Immediate render layer so gsplat does not occlude them.
@@ -714,11 +725,13 @@ function setupSogsLotLines(app) {
     ent.setLocalScale(style.width, len, style.height);
     const mi = new MeshInstance(mesh, mat, ent);
     mi.cull = false;
+    mi.drawOrder = LOT_LINE_DRAW_ORDER;
     ent.addComponent("render", {
       meshInstances: [mi],
       castShadows: false,
       receiveShadows: false,
     });
+    setLotLineRenderLayer(ent);
     root.addChild(ent);
   }
 
@@ -732,11 +745,13 @@ function setupSogsLotLines(app) {
       ent.setLocalScale(style.width, style.height, style.width);
       const mi = new MeshInstance(vertexMesh, mat, ent);
       mi.cull = false;
+      mi.drawOrder = LOT_LINE_DRAW_ORDER;
       ent.addComponent("render", {
         meshInstances: [mi],
         castShadows: false,
         receiveShadows: false,
       });
+      setLotLineRenderLayer(ent);
       root.addChild(ent);
     }
   } catch (error) {

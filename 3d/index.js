@@ -7553,7 +7553,7 @@ var CANYON_VISTA_TAP_DOTS = [
     icon: "camera",
     caption: "Main House",
     minDistance: 0.06,
-    maxVisibleDistance: 1.35,
+    maxVisibleDistance: 0.95,
     photos: [
       "https://spcprt.com/spaces/media/users/d8914320-9061-70dd-72d5-0e5878ed821c/projects/78659e97-7978-43f6-88b8-577e45f182de/photos/Main%20House/4800%20Meadow%20Ln%20MLS01%20copy.jpg",
       "https://spcprt.com/spaces/media/users/d8914320-9061-70dd-72d5-0e5878ed821c/projects/78659e97-7978-43f6-88b8-577e45f182de/photos/Main%20House/4800%20Meadow%20Ln%20MLS02%20copy.jpg",
@@ -7615,7 +7615,7 @@ var CANYON_VISTA_TAP_DOTS = [
     icon: "camera",
     caption: "Attached Shop and Studio/Guest Apt",
     minDistance: 0.06,
-    maxVisibleDistance: 1.35,
+    maxVisibleDistance: 0.95,
     photos: [
       "https://spcprt.com/spaces/media/users/d8914320-9061-70dd-72d5-0e5878ed821c/projects/78659e97-7978-43f6-88b8-577e45f182de/photos/Attached%20Shop%20and%20Studio/Guest%20Apt/4800%20Meadow%20Ln%20MLS57%20copy.jpg",
       "https://spcprt.com/spaces/media/users/d8914320-9061-70dd-72d5-0e5878ed821c/projects/78659e97-7978-43f6-88b8-577e45f182de/photos/Attached%20Shop%20and%20Studio/Guest%20Apt/4800%20Meadow%20Ln%20MLS58%20copy.jpg",
@@ -7640,7 +7640,7 @@ var CANYON_VISTA_TAP_DOTS = [
     icon: "camera",
     caption: "Guest/Caretaker Cabin",
     minDistance: 0.06,
-    maxVisibleDistance: 1.35,
+    maxVisibleDistance: 0.95,
     photos: [
       "https://spcprt.com/spaces/media/users/d8914320-9061-70dd-72d5-0e5878ed821c/projects/78659e97-7978-43f6-88b8-577e45f182de/photos/Guest/Caretaker%20Cabin/4800%20Meadow%20Ln%20MLS78%20copy.jpg",
       "https://spcprt.com/spaces/media/users/d8914320-9061-70dd-72d5-0e5878ed821c/projects/78659e97-7978-43f6-88b8-577e45f182de/photos/Guest/Caretaker%20Cabin/4800%20Meadow%20Ln%20MLS79%20copy.jpg",
@@ -7657,7 +7657,7 @@ var CANYON_VISTA_TAP_DOTS = [
     icon: "camera",
     caption: "Horse Barn",
     minDistance: 0.06,
-    maxVisibleDistance: 1.35,
+    maxVisibleDistance: 0.95,
     photos: [
       "https://spcprt.com/spaces/media/users/d8914320-9061-70dd-72d5-0e5878ed821c/projects/78659e97-7978-43f6-88b8-577e45f182de/photos/Horse%20Barn/4800%20Meadow%20Ln%20MLS02%20copy.jpg",
       "https://spcprt.com/spaces/media/users/d8914320-9061-70dd-72d5-0e5878ed821c/projects/78659e97-7978-43f6-88b8-577e45f182de/photos/Horse%20Barn/4800%20Meadow%20Ln%20MLS04%20copy.jpg",
@@ -14774,7 +14774,7 @@ var import_react7 = __toESM(require_react(), 1);
 var import_jsx_runtime9 = __toESM(require_jsx_runtime(), 1);
 var TAPDOT_CAMERA_ICON = "https://raw.githubusercontent.com/HansenHomeAI/WhiteCameraIcon/main/3TestIcons-9.png";
 var TAP_DOT_DEFAULT_MIN_DISTANCE = 0.04;
-var TAP_DOT_DEFAULT_MAX_VISIBLE_DISTANCE = 1.35;
+var TAP_DOT_DEFAULT_MAX_VISIBLE_DISTANCE = 0.95;
 var TAP_DOT_OPACITY_ANIMATION_MS = 400;
 function tapDotTargetOpacity(distance, minDistance, maxDistance) {
   if (!Number.isFinite(distance)) return 0;
