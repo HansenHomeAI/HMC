@@ -7553,7 +7553,7 @@ var CANYON_VISTA_TAP_DOTS = [
     icon: "camera",
     caption: "Main House",
     minDistance: 0.06,
-    maxDistance: 50,
+    maxVisibleDistance: 1.35,
     photos: [
       "https://spcprt.com/spaces/media/users/d8914320-9061-70dd-72d5-0e5878ed821c/projects/78659e97-7978-43f6-88b8-577e45f182de/photos/Main%20House/4800%20Meadow%20Ln%20MLS01%20copy.jpg",
       "https://spcprt.com/spaces/media/users/d8914320-9061-70dd-72d5-0e5878ed821c/projects/78659e97-7978-43f6-88b8-577e45f182de/photos/Main%20House/4800%20Meadow%20Ln%20MLS02%20copy.jpg",
@@ -7615,7 +7615,7 @@ var CANYON_VISTA_TAP_DOTS = [
     icon: "camera",
     caption: "Attached Shop and Studio/Guest Apt",
     minDistance: 0.06,
-    maxDistance: 50,
+    maxVisibleDistance: 1.35,
     photos: [
       "https://spcprt.com/spaces/media/users/d8914320-9061-70dd-72d5-0e5878ed821c/projects/78659e97-7978-43f6-88b8-577e45f182de/photos/Attached%20Shop%20and%20Studio/Guest%20Apt/4800%20Meadow%20Ln%20MLS57%20copy.jpg",
       "https://spcprt.com/spaces/media/users/d8914320-9061-70dd-72d5-0e5878ed821c/projects/78659e97-7978-43f6-88b8-577e45f182de/photos/Attached%20Shop%20and%20Studio/Guest%20Apt/4800%20Meadow%20Ln%20MLS58%20copy.jpg",
@@ -7640,7 +7640,7 @@ var CANYON_VISTA_TAP_DOTS = [
     icon: "camera",
     caption: "Guest/Caretaker Cabin",
     minDistance: 0.06,
-    maxDistance: 50,
+    maxVisibleDistance: 1.35,
     photos: [
       "https://spcprt.com/spaces/media/users/d8914320-9061-70dd-72d5-0e5878ed821c/projects/78659e97-7978-43f6-88b8-577e45f182de/photos/Guest/Caretaker%20Cabin/4800%20Meadow%20Ln%20MLS78%20copy.jpg",
       "https://spcprt.com/spaces/media/users/d8914320-9061-70dd-72d5-0e5878ed821c/projects/78659e97-7978-43f6-88b8-577e45f182de/photos/Guest/Caretaker%20Cabin/4800%20Meadow%20Ln%20MLS79%20copy.jpg",
@@ -7657,7 +7657,7 @@ var CANYON_VISTA_TAP_DOTS = [
     icon: "camera",
     caption: "Horse Barn",
     minDistance: 0.06,
-    maxDistance: 50,
+    maxVisibleDistance: 1.35,
     photos: [
       "https://spcprt.com/spaces/media/users/d8914320-9061-70dd-72d5-0e5878ed821c/projects/78659e97-7978-43f6-88b8-577e45f182de/photos/Horse%20Barn/4800%20Meadow%20Ln%20MLS02%20copy.jpg",
       "https://spcprt.com/spaces/media/users/d8914320-9061-70dd-72d5-0e5878ed821c/projects/78659e97-7978-43f6-88b8-577e45f182de/photos/Horse%20Barn/4800%20Meadow%20Ln%20MLS04%20copy.jpg",
@@ -14774,18 +14774,39 @@ var import_react7 = __toESM(require_react(), 1);
 var import_jsx_runtime9 = __toESM(require_jsx_runtime(), 1);
 var TAPDOT_CAMERA_ICON = "https://raw.githubusercontent.com/HansenHomeAI/WhiteCameraIcon/main/3TestIcons-9.png";
 var TAP_DOT_DEFAULT_MIN_DISTANCE = 0.04;
-var TAP_DOT_DEFAULT_MAX_DISTANCE = 50;
-var TAP_DOT_DEFAULT_FADE_DISTANCE = 0.16;
-function tapDotDistanceOpacity(distance, minDistance, maxDistance, fadeDistance) {
+var TAP_DOT_DEFAULT_MAX_VISIBLE_DISTANCE = 1.35;
+var TAP_DOT_OPACITY_ANIMATION_MS = 400;
+function tapDotTargetOpacity(distance, minDistance, maxDistance) {
   if (!Number.isFinite(distance)) return 0;
   if (distance < minDistance || distance > maxDistance) return 0;
-  const fade = Math.max(0.001, fadeDistance);
-  const nearOpacity = Math.min(1, (distance - minDistance) / fade);
-  const farOpacity = Math.min(1, (maxDistance - distance) / fade);
-  return Math.max(0, Math.min(1, nearOpacity, farOpacity));
+  return 1;
+}
+function tapDotMaxVisibleDistance(tapDot) {
+  const explicit = Number(tapDot?.maxVisibleDistance);
+  if (Number.isFinite(explicit) && explicit > 0) return explicit;
+  const legacy = Number(tapDot?.maxDistance);
+  if (Number.isFinite(legacy) && legacy > 0) return legacy;
+  return TAP_DOT_DEFAULT_MAX_VISIBLE_DISTANCE;
+}
+function tapDotAnimatedOpacity(current, target, deltaMs) {
+  const from = Number.isFinite(current) ? Math.max(0, Math.min(1, current)) : target;
+  const to = Number.isFinite(target) ? Math.max(0, Math.min(1, target)) : 0;
+  const step = Math.max(0, Number(deltaMs) || 0) / TAP_DOT_OPACITY_ANIMATION_MS;
+  if (Math.abs(to - from) <= step) return to;
+  return from + Math.sign(to - from) * step;
+}
+function tapDotBlurForOpacity(opacity) {
+  const o = Number.isFinite(opacity) ? Math.max(0, Math.min(1, opacity)) : 0;
+  return Math.round((1 - o) * 6 * 100) / 100;
+}
+function tapDotScreenCoord(value) {
+  const n = Number(value);
+  return Number.isFinite(n) ? Math.round(n * 100) / 100 : 0;
 }
 function TapDotsOverlay({ enabled, tapDots, iframeRef, containerRef, onOpenPhotos }) {
   const buttonRefs = (0, import_react7.useRef)([]);
+  const opacityRefs = (0, import_react7.useRef)([]);
+  const lastTickRef = (0, import_react7.useRef)(null);
   (0, import_react7.useEffect)(() => {
     if (!enabled) return;
     const schedule = window.requestIdleCallback ?? ((cb) => window.setTimeout(cb, 250));
@@ -14800,6 +14821,8 @@ function TapDotsOverlay({ enabled, tapDots, iframeRef, containerRef, onOpenPhoto
   }, [enabled, tapDots]);
   (0, import_react7.useEffect)(() => {
     if (!enabled) {
+      opacityRefs.current = [];
+      lastTickRef.current = null;
       for (const button of buttonRefs.current) {
         if (button) {
           button.style.display = "none";
@@ -14808,7 +14831,10 @@ function TapDotsOverlay({ enabled, tapDots, iframeRef, containerRef, onOpenPhoto
       return;
     }
     let raf = 0;
-    const tick = () => {
+    const tick = (now) => {
+      const previousTick = lastTickRef.current;
+      const deltaMs = previousTick == null ? 16.7 : Math.min(80, Math.max(0, now - previousTick));
+      lastTickRef.current = now;
       const el = containerRef.current;
       const projectWorldPoint = iframeRef.current?.contentWindow?.__sogsProjectWorldPoint;
       if (el && typeof projectWorldPoint === "function") {
@@ -14822,13 +14848,15 @@ function TapDotsOverlay({ enabled, tapDots, iframeRef, containerRef, onOpenPhoto
           const y = Number(p?.y) || 0;
           const distance = Number(p?.distance);
           const minDistance = Number.isFinite(td.minDistance) ? td.minDistance : TAP_DOT_DEFAULT_MIN_DISTANCE;
-          const maxDistance = Number.isFinite(td.maxDistance) ? td.maxDistance : TAP_DOT_DEFAULT_MAX_DISTANCE;
-          const fadeDistance = Number.isFinite(td.fadeDistance) ? td.fadeDistance : TAP_DOT_DEFAULT_FADE_DISTANCE;
-          const opacity = tapDotDistanceOpacity(distance, minDistance, maxDistance, fadeDistance);
-          const visible = p?.visible === true && opacity > 0.02 && x >= 0 && x <= w && y >= 0 && y <= h;
-          button.style.left = `${Math.round(x)}px`;
-          button.style.top = `${Math.round(y)}px`;
-          button.style.opacity = String(opacity);
+          const maxDistance = tapDotMaxVisibleDistance(td);
+          const targetOpacity = tapDotTargetOpacity(distance, minDistance, maxDistance);
+          const previousOpacity = opacityRefs.current[i] ?? 0;
+          const animatedOpacity = tapDotAnimatedOpacity(previousOpacity, targetOpacity, deltaMs);
+          opacityRefs.current[i] = animatedOpacity;
+          const visible = p?.visible === true && animatedOpacity > 0.02 && x >= 0 && x <= w && y >= 0 && y <= h;
+          button.style.transform = `translate3d(${tapDotScreenCoord(x)}px, ${tapDotScreenCoord(y)}px, 0) translate(-50%, -100%)`;
+          button.style.opacity = String(animatedOpacity);
+          button.style.filter = `blur(${tapDotBlurForOpacity(animatedOpacity)}px)`;
           button.style.display = visible ? "inline-flex" : "none";
           button.setAttribute("aria-hidden", visible ? "false" : "true");
         });
@@ -14838,6 +14866,8 @@ function TapDotsOverlay({ enabled, tapDots, iframeRef, containerRef, onOpenPhoto
             button.style.display = "none";
           }
         }
+        opacityRefs.current = [];
+        lastTickRef.current = null;
       }
       raf = requestAnimationFrame(tick);
     };
@@ -14866,6 +14896,7 @@ function TapDotsOverlay({ enabled, tapDots, iframeRef, containerRef, onOpenPhoto
         style: {
           left: 0,
           top: 0,
+          transform: "translate3d(0, 0, 0) translate(-50%, -100%)",
           opacity: 0,
           display: "none"
         },

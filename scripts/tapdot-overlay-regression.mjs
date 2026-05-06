@@ -17,21 +17,21 @@ if (tapDotsOverlay.includes("createOverlayPerspectiveCamera") || tapDotsOverlay.
   throw new Error("TapDotsOverlay must not use the old parent-side camera approximation.");
 }
 
-if (!source.includes("TAP_DOT_DEFAULT_MAX_DISTANCE") || !source.includes("tapDotDistanceOpacity")) {
-  throw new Error("TapDotsOverlay must include distance limits/fade behavior.");
+if (!source.includes("TAP_DOT_DEFAULT_MAX_VISIBLE_DISTANCE") || !source.includes("tapDotTargetOpacity")) {
+  throw new Error("TapDotsOverlay must include distance threshold behavior.");
 }
 
-if (!source.includes("var TAP_DOT_DEFAULT_MAX_DISTANCE = 50;")) {
-  throw new Error("Tap dot default max distance must stay at 50 units.");
+if (!source.includes("var TAP_DOT_DEFAULT_MAX_VISIBLE_DISTANCE = 1.35;")) {
+  throw new Error("Tap dot default max visible distance must stay close enough to declutter zoomed-out views.");
 }
 
-const tapDotMaxDistanceMatches = source.match(/maxDistance: 50/g) || [];
-if (tapDotMaxDistanceMatches.length < 2) {
-  throw new Error("Bundled tap dots must use a 50 unit max distance.");
+const tapDotMaxVisibleDistanceMatches = source.match(/maxVisibleDistance: 1\.(2|35)/g) || [];
+if (tapDotMaxVisibleDistanceMatches.length < 2) {
+  throw new Error("Bundled tap dots must use explicit per-dot max visible distances.");
 }
 
-if (!source.includes("maxDistance: 50") || !source.includes("maxRadiusFromOrigin: 50")) {
-  throw new Error("Viewer distance and radius caps must stay at 50 units.");
+if (!source.includes("maxRadiusFromOrigin: 50")) {
+  throw new Error("Viewer radius cap must stay at 50 units.");
 }
 
 const incognitoProjectId = "78659e97-7978-43f6-88b8-577e45f182de";
