@@ -915,9 +915,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     /** Tell parent to exit scripted tour / auto-orbit when the user grabs the view (orbit, zoom, touch). */
     const notifyUserInteraction = () => {
-      if (window.__sogsScriptedCamera) {
-        window.parent.postMessage({ type: "sogs:userInteraction" }, "*");
-      }
+      window.parent.postMessage({ type: "sogs:userInteraction" }, "*");
     };
     for (const ev of ["pointerdown", "wheel", "touchstart"]) {
       window.addEventListener(ev, notifyUserInteraction, { capture: true, passive: true });

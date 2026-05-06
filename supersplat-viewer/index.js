@@ -101123,16 +101123,22 @@ class CameraManager {
                 return;
             }
             if (state.cameraMode !== 'orbit') {
-                return;
+                state.cameraMode = 'orbit';
             }
             const cam = this.camera;
             tmpCamera.copy(cam);
             tmpCamera.look(cam.position, worldPos);
             this._pickFocusRingSeq++;
             this._pickFocusRingT = Date.now();
-            controllers.orbit.goto(tmpCamera);
+            controllers.orbit.goto(tmpCamera, false);
+            target.copy(tmpCamera);
+            this.camera.copy(tmpCamera);
             this._pickFocusWorld.set(worldPos.x, worldPos.y, worldPos.z);
             this._pickFocusFramesLeft = 75;
+            this.emitPickFocusScreen();
+            if (global?.app) {
+                global.app.renderNextFrame = true;
+            }
         });
         events.on('annotation.activate', (annotation) => {
             // switch to orbit camera on pick
