@@ -15676,6 +15676,21 @@ function SogsMigratedViewer({
     }, MOBILE_BOOT_TIMEOUT_MS);
     return () => clearTimeout(id);
   }, [bootMode, mobileBootFallbackEnabled, requestMobileBootFallback, viewerState, iframeKey]);
+  const stopScriptedViewerMotion = (0, import_react9.useCallback)((source) => {
+    if (!pathPlayingRef.current && !autoRotateRef.current) {
+      return false;
+    }
+    pathStateRef.current.playing = false;
+    pathPlayingRef.current = false;
+    setPathPlaying(false);
+    setAutoRotate(false);
+    try {
+      source?.postMessage({ type: "sogs:cameraMode", mode: "free" }, "*");
+    } catch {
+    }
+    lastScriptedRef.current = false;
+    return true;
+  }, []);
   (0, import_react9.useEffect)(() => {
     const onMessage = (event) => {
       if (event.data?.type === "supersplat:firstFrame" && event.source === iframeRef.current?.contentWindow) {
@@ -15747,6 +15762,7 @@ function SogsMigratedViewer({
       }
       if (event.data?.type === "sogs:pickFocus" && event.source === iframeRef.current?.contentWindow) {
         const d = event.data;
+        stopScriptedViewerMotion(event.source);
         if (Array.isArray(d.world) && d.world.length >= 3) {
           orbitFocusRef.current = {
             x: d.world[0],
@@ -15775,18 +15791,7 @@ function SogsMigratedViewer({
         }
       }
       if (event.data?.type === "sogs:userInteraction" && event.source === iframeRef.current?.contentWindow) {
-        if (!pathPlayingRef.current && !autoRotateRef.current) {
-          return;
-        }
-        pathStateRef.current.playing = false;
-        pathPlayingRef.current = false;
-        setPathPlaying(false);
-        setAutoRotate(false);
-        try {
-          event.source.postMessage({ type: "sogs:cameraMode", mode: "free" }, "*");
-        } catch {
-        }
-        lastScriptedRef.current = false;
+        stopScriptedViewerMotion(event.source);
       }
       if (event.data?.type === "sogs:cameraPose" && event.source === iframeRef.current?.contentWindow) {
         if (pathPlayingRef.current || autoRotateRef.current) {
@@ -15839,7 +15844,7 @@ function SogsMigratedViewer({
     };
     window.addEventListener("message", onMessage);
     return () => window.removeEventListener("message", onMessage);
-  }, [requestMobileBootFallback]);
+  }, [requestMobileBootFallback, stopScriptedViewerMotion]);
   (0, import_react9.useEffect)(() => {
     if (viewerState !== "ready") return;
     postToWindow(iframeRef.current?.contentWindow, { type: "sogs:worldGuides", enabled: showWorldAxes });
