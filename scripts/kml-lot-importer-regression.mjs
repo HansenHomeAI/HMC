@@ -182,6 +182,7 @@ assert.match(bridgeSource, /function buildUnitLotVertexGeometry\(\)/, "Iframe lo
 assert.match(bridgeSource, /function buildUnitLotVertexMesh\(app\)/, "Iframe lot line renderer should build vertex cap geometry for rounded joins");
 assert.match(bridgeSource, /new Entity\(`lotLineVertex:\$\{dot\.name\}`/, "Iframe lot line renderer should create a cap at every lot vertex");
 assert.match(bridgeSource, /ent\.setLocalScale\(style\.width, style\.height, style\.width\)/, "Lot vertex caps should use a top-down circular width and vertical height matching the lot line style");
+assert.match(bridgeSource, /catch \(error\) \{[\s\S]*?Lot line vertex caps failed; rendering line segments only\./, "Lot line segments should stay visible even if rounded vertex cap geometry fails");
 assert.match(source, /fetch\(tapDotAssetUrl\(DEFAULT_INCOGNITO_KML_URL\)\)/, "The bundled KML file should be imported at runtime, not only hardcoded");
 assert.match(source, /id: "lot-line-kml-scale"[\s\S]*?step: "0\.0001"/, "KML scale spinner should use fine 0.0001 increments");
 for (const id of ["lot-line-kml-x", "lot-line-kml-y", "lot-line-kml-z", "lot-line-x", "lot-line-y", "lot-line-z"]) {

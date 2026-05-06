@@ -693,7 +693,6 @@ function setupSogsLotLines(app) {
 
   const style = normalizeLotLineStyle(window.__sogsLotLineStyle);
   const mesh = buildUnitCylinderMesh(app);
-  const vertexMesh = buildUnitLotVertexMesh(app);
   const mat = lotLineMaterial(style);
   const root = new Entity("sogsLotLines", app);
   app.root.addChild(root);
@@ -723,20 +722,25 @@ function setupSogsLotLines(app) {
     root.addChild(ent);
   }
 
-  for (const dot of dots) {
-    const p = byName.get(dot?.name);
-    if (!p) continue;
-    const ent = new Entity(`lotLineVertex:${dot.name}`, app);
-    ent.setLocalPosition(p.x, p.y, p.z);
-    ent.setLocalScale(style.width, style.height, style.width);
-    const mi = new MeshInstance(vertexMesh, mat, ent);
-    mi.cull = false;
-    ent.addComponent("render", {
-      meshInstances: [mi],
-      castShadows: false,
-      receiveShadows: false,
-    });
-    root.addChild(ent);
+  try {
+    const vertexMesh = buildUnitLotVertexMesh(app);
+    for (const dot of dots) {
+      const p = byName.get(dot?.name);
+      if (!p) continue;
+      const ent = new Entity(`lotLineVertex:${dot.name}`, app);
+      ent.setLocalPosition(p.x, p.y, p.z);
+      ent.setLocalScale(style.width, style.height, style.width);
+      const mi = new MeshInstance(vertexMesh, mat, ent);
+      mi.cull = false;
+      ent.addComponent("render", {
+        meshInstances: [mi],
+        castShadows: false,
+        receiveShadows: false,
+      });
+      root.addChild(ent);
+    }
+  } catch (error) {
+    console.warn("Lot line vertex caps failed; rendering line segments only.", error);
   }
 
   window.__sogsLotLinesRoot = root;
