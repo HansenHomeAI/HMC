@@ -15368,6 +15368,7 @@ function SogsMigratedViewer({
     );
   });
   const [lotCopyFeedback, setLotCopyFeedback] = (0, import_react9.useState)(null);
+  const [tapDotCopyFeedback, setTapDotCopyFeedback] = (0, import_react9.useState)(null);
   const [splatCopyFeedback, setSplatCopyFeedback] = (0, import_react9.useState)(null);
   const [skyboxRotation, setSkyboxRotation] = (0, import_react9.useState)([...SOGS_DEFAULT_SKYBOX_ROTATION]);
   const [skyboxRotStr, setSkyboxRotStr] = (0, import_react9.useState)(() => formatSkyboxRotStrFromNums([...SOGS_DEFAULT_SKYBOX_ROTATION]));
@@ -15559,6 +15560,32 @@ function SogsMigratedViewer({
     }
     window.setTimeout(() => setLotCopyFeedback(null), 2e3);
   }, [lotDots, lotLines, lotLineStyle, kmlBoundary, kmlTransform]);
+  const copyTapDotsJson = (0, import_react9.useCallback)(async () => {
+    const payload = {
+      tapDots: tapDots.map((dot) => ({
+        caption: dot.caption,
+        icon: dot.icon,
+        position: dot.position,
+        scale: dot.scale,
+        minDistance: dot.minDistance ?? null,
+        maxVisibleDistance: tapDotMaxVisibleDistance(dot),
+        photos: Array.isArray(dot.photos) ? dot.photos : []
+      })),
+      settings: {
+        maxVisibleDistance: normalizeTapDotMaxVisibleDistance(tapDots[0]?.maxVisibleDistance),
+        source: { type: "incognito_static_photos" }
+      }
+    };
+    const text = JSON.stringify(payload, null, 2);
+    try {
+      await copyTextToClipboard(text);
+      setTapDotCopyFeedback(`Copied ${tapDots.length} tap dots`);
+    } catch (error2) {
+      console.error("Tap dot JSON copy failed", error2);
+      setTapDotCopyFeedback("Copy failed");
+    }
+    window.setTimeout(() => setTapDotCopyFeedback(null), 2e3);
+  }, [tapDots]);
   (0, import_react9.useEffect)(() => {
     cameraBoundsRef.current = { yMin: cameraYMin, maxR: cameraMaxRadius };
   }, [cameraYMin, cameraMaxRadius]);
@@ -16512,7 +16539,9 @@ function SogsMigratedViewer({
                 }
               )
             ] })
-          ] }) : null
+          ] }) : null,
+          /* @__PURE__ */ (0, import_jsx_runtime11.jsx)("div", { className: "lot-editor-actions", children: /* @__PURE__ */ (0, import_jsx_runtime11.jsx)("button", { type: "button", className: "lot-editor-action-btn", disabled: toggleDisabled, onClick: copyTapDotsJson, children: "Copy JSON" }) }),
+          tapDotCopyFeedback ? /* @__PURE__ */ (0, import_jsx_runtime11.jsx)("p", { className: "animation-path-copy-feedback", "data-testid": "tap-dot-copy-feedback", children: tapDotCopyFeedback }) : null
         ]
       }
     ) : null,

@@ -77,6 +77,18 @@ if (!source.includes("setTapDots((dots) => dots.map((d) => ({ ...d, maxVisibleDi
   throw new Error("Shared max visibility edits should apply to every tap dot together.");
 }
 
+if (!source.includes("const copyTapDotsJson") || !source.includes('data-testid": "tap-dot-copy-feedback"')) {
+  throw new Error("Tap dot editor should expose a Copy JSON action with visible feedback.");
+}
+
+if (!source.includes("tapDots: tapDots.map((dot) => ({") || !source.includes("maxVisibleDistance: tapDotMaxVisibleDistance(dot)") || !source.includes("photos: Array.isArray(dot.photos) ? dot.photos : []")) {
+  throw new Error("Tap dot Copy JSON should include dot positions, visibility, and photo arrays.");
+}
+
+if (!source.includes("settings:") || !source.includes('source: { type: "incognito_static_photos" }')) {
+  throw new Error("Tap dot Copy JSON should include shared settings/source metadata.");
+}
+
 if (!source.includes("tap-dot-editor-grid") || !css.includes(".tap-dot-editor-grid")) {
   throw new Error("Tap dot editor title/Y controls should use a dedicated grid so long titles are editable without cramped inputs.");
 }
