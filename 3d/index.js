@@ -15355,40 +15355,46 @@ function SogsMigratedViewer({
     window.addEventListener("keydown", onTapDotKeyDown);
     return () => window.removeEventListener("keydown", onTapDotKeyDown);
   }, [developerToolsEnabled, tapDotEditorOpen, showTapDots, toggleDisabled, selectedTapDot, updateTapDotPosition]);
+  const handleLotLineKeyboardKey = (0, import_react9.useCallback)((key) => {
+    if (!lotLineEditorOpen || !showLotLines || toggleDisabled) return false;
+    if (key === "ArrowUp" || key === "ArrowDown") {
+      if (!selectedLotDot) return false;
+      const direction = key === "ArrowUp" ? 1 : -1;
+      updateLotDotPosition(selectedLotDot.name, {
+        ...selectedLotDot.position,
+        y: roundSplatThousandths(selectedLotDot.position.y + direction * LOT_LINE_KEYBOARD_Y_STEP)
+      });
+      return true;
+    }
+    if (key === "ArrowRight") {
+      const next = getAdjacentLotVertexName(selectedLotPointName, 1, lotDots, lotLines);
+      if (next) {
+        setSelectedLotPointName(next);
+        return true;
+      }
+      return false;
+    }
+    if (key === "ArrowLeft") {
+      const next = getAdjacentLotVertexName(selectedLotPointName, -1, lotDots, lotLines);
+      if (next) {
+        setSelectedLotPointName(next);
+        return true;
+      }
+      return false;
+    }
+    return false;
+  }, [lotLineEditorOpen, showLotLines, toggleDisabled, selectedLotDot, selectedLotPointName, lotDots, lotLines, updateLotDotPosition]);
   (0, import_react9.useEffect)(() => {
-    if (!lotLineEditorOpen || !showLotLines || toggleDisabled) return;
     const onLotLineKeyDown = (event) => {
       if (event.defaultPrevented || event.metaKey || event.ctrlKey || event.altKey) return;
       if (event.target?.closest?.("input, textarea, [contenteditable=true]")) return;
-      if (event.key === "ArrowUp" || event.key === "ArrowDown") {
-        if (!selectedLotDot) return;
+      if (handleLotLineKeyboardKey(event.key)) {
         event.preventDefault();
-        const direction = event.key === "ArrowUp" ? 1 : -1;
-        updateLotDotPosition(selectedLotDot.name, {
-          ...selectedLotDot.position,
-          y: roundSplatThousandths(selectedLotDot.position.y + direction * LOT_LINE_KEYBOARD_Y_STEP)
-        });
-        return;
-      }
-      if (event.key === "ArrowRight") {
-        const next = getAdjacentLotVertexName(selectedLotPointName, 1, lotDots, lotLines);
-        if (next) {
-          event.preventDefault();
-          setSelectedLotPointName(next);
-        }
-        return;
-      }
-      if (event.key === "ArrowLeft") {
-        const next = getAdjacentLotVertexName(selectedLotPointName, -1, lotDots, lotLines);
-        if (next) {
-          event.preventDefault();
-          setSelectedLotPointName(next);
-        }
       }
     };
     window.addEventListener("keydown", onLotLineKeyDown);
     return () => window.removeEventListener("keydown", onLotLineKeyDown);
-  }, [lotLineEditorOpen, showLotLines, toggleDisabled, selectedLotDot, selectedLotPointName, lotDots, lotLines, updateLotDotPosition]);
+  }, [handleLotLineKeyboardKey]);
   const resetLotDots = (0, import_react9.useCallback)(() => {
     setKmlBoundary(DEFAULT_INCOGNITO_KML_BOUNDARY);
     setKmlTransform(DEFAULT_INCOGNITO_KML_TRANSFORM);
@@ -15760,6 +15766,9 @@ function SogsMigratedViewer({
       if (event.data?.type === "supersplat:bootError" && event.source === iframeRef.current?.contentWindow) {
         requestMobileBootFallback(event.data.stage || "boot-error");
       }
+      if (event.data?.type === "sogs:keyDown" && event.source === iframeRef.current?.contentWindow) {
+        handleLotLineKeyboardKey(event.data.key);
+      }
       if (event.data?.type === "sogs:pickFocus" && event.source === iframeRef.current?.contentWindow) {
         const d = event.data;
         stopScriptedViewerMotion(event.source);
@@ -15844,7 +15853,7 @@ function SogsMigratedViewer({
     };
     window.addEventListener("message", onMessage);
     return () => window.removeEventListener("message", onMessage);
-  }, [requestMobileBootFallback, stopScriptedViewerMotion]);
+  }, [handleLotLineKeyboardKey, requestMobileBootFallback, stopScriptedViewerMotion]);
   (0, import_react9.useEffect)(() => {
     if (viewerState !== "ready") return;
     postToWindow(iframeRef.current?.contentWindow, { type: "sogs:worldGuides", enabled: showWorldAxes });

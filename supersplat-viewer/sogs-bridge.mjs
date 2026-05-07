@@ -924,6 +924,17 @@ document.addEventListener("DOMContentLoaded", async () => {
     for (const ev of ["pointerdown", "wheel", "touchstart"]) {
       window.addEventListener(ev, notifyUserInteraction, { capture: true, passive: true });
     }
+    window.addEventListener(
+      "keydown",
+      (event) => {
+        if (event.defaultPrevented || event.metaKey || event.ctrlKey || event.altKey) return;
+        if (!["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(event.key)) return;
+        if (event.target?.closest?.("input, textarea, select, [contenteditable=true]")) return;
+        window.parent.postMessage({ type: "sogs:keyDown", key: event.key }, "*");
+        event.preventDefault();
+      },
+      { capture: true }
+    );
     postBootEvent("supersplat:bridgeReady", { quality: bootOptions.quality });
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
