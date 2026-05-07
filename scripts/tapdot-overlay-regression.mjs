@@ -21,13 +21,13 @@ if (!source.includes("TAP_DOT_DEFAULT_MAX_VISIBLE_DISTANCE") || !source.includes
   throw new Error("TapDotsOverlay must include distance threshold behavior.");
 }
 
-if (!source.includes("var TAP_DOT_DEFAULT_MAX_VISIBLE_DISTANCE = 0.38;")) {
-  throw new Error("Tap dot default max visible distance must stay about 60% shorter to declutter zoomed-out views.");
+if (!source.includes("var TAP_DOT_DEFAULT_MAX_VISIBLE_DISTANCE = 0.24;")) {
+  throw new Error("Tap dot default max visible distance must match the edited uncluttered view distance.");
 }
 
-const tapDotMaxVisibleDistanceMatches = source.match(/maxVisibleDistance: 0\.38/g) || [];
+const tapDotMaxVisibleDistanceMatches = source.match(/maxVisibleDistance: 0\.24/g) || [];
 if (tapDotMaxVisibleDistanceMatches.length < 4) {
-  throw new Error("Bundled Incognito tap dots must use explicit 60% shorter per-dot max visible distances.");
+  throw new Error("Bundled Incognito tap dots must use explicit edited per-dot max visible distances.");
 }
 
 if (!source.includes("maxRadiusFromOrigin: 50")) {
@@ -38,6 +38,16 @@ const incognitoProjectId = "78659e97-7978-43f6-88b8-577e45f182de";
 for (const folderName of ["Main House", "Attached Shop and Studio/Guest Apt", "Guest/Caretaker Cabin", "Horse Barn"]) {
   if (!source.includes(`caption: "${folderName}"`)) {
     throw new Error(`Expected an Incognito tap dot named after folder: ${folderName}`);
+  }
+}
+for (const expectedPosition of [
+  "position: { x: -0.013, y: 0.012, z: -0.021 }",
+  "position: { x: 0.014, y: 0.01, z: 0.021 }",
+  "position: { x: 0.121, y: -0.02, z: -0.259 }",
+  "position: { x: 0.125, y: -0.02, z: -0.291 }"
+]) {
+  if (!source.includes(expectedPosition)) {
+    throw new Error(`Missing edited tap dot position: ${expectedPosition}`);
   }
 }
 if (!source.includes(incognitoProjectId)) {

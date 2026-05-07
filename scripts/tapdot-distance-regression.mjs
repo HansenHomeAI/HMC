@@ -6,7 +6,7 @@ const source = readFileSync(new URL("../3d/index.js", import.meta.url), "utf8");
 const tapDotsOverlay = source.match(/function TapDotsOverlay\([\s\S]*?\n}\n\n\/\/ components\/sogs-migrated-viewer\/TapPickFeedback\.tsx/)?.[0] || "";
 assert.ok(tapDotsOverlay, "TapDotsOverlay source block should exist");
 
-assert.match(source, /var TAP_DOT_DEFAULT_MAX_VISIBLE_DISTANCE = 0\.38;/, "Tap dots should default to a 60% shorter max visible distance so zoomed-out views stay uncluttered");
+assert.match(source, /var TAP_DOT_DEFAULT_MAX_VISIBLE_DISTANCE = 0\.24;/, "Tap dots should default to the edited max visible distance so zoomed-out views stay uncluttered");
 assert.match(source, /var TAP_DOT_OPACITY_ANIMATION_MS = 400;/, "Tap dots should use a fixed 400ms opacity animation duration");
 assert.match(source, /function tapDotMaxVisibleDistance\(tapDot\)/, "Tap dots should resolve per-dot max visible distance");
 assert.match(source, /function tapDotTargetOpacity\(distance, minDistance, maxDistance\)/, "Tap dot distance should resolve to a binary threshold target opacity");
@@ -19,7 +19,7 @@ assert.match(tapDotsOverlay, /const animatedOpacity = tapDotAnimatedOpacity\(pre
 assert.match(tapDotsOverlay, /button\.style\.filter = `blur\(\$\{tapDotBlurForOpacity\(animatedOpacity\)\}px\)`;/, "TapDotsOverlay should apply blur from the fixed animation progress");
 assert.doesNotMatch(tapDotsOverlay, /fadeDistance/, "TapDotsOverlay should not make opacity proportional to distance inside a fade band");
 for (const caption of ["Main House", "Attached Shop and Studio/Guest Apt", "Guest/Caretaker Cabin", "Horse Barn"]) {
-  assert.match(source, new RegExp(`caption: "${caption}"[\\s\\S]*?maxVisibleDistance: 0\\.38`), `${caption} should have the 60% shorter per-dot max visible distance`);
+  assert.match(source, new RegExp(`caption: "${caption}"[\\s\\S]*?maxVisibleDistance: 0\\.24`), `${caption} should have the edited per-dot max visible distance`);
   assert.doesNotMatch(source, new RegExp(`caption: "${caption}"[\\s\\S]*?maxDistance: 50`), `${caption} should not use the old zoomed-out 50-unit max distance`);
 }
 assert.doesNotMatch(source, /caption: "Front Entry"/, "Incognito viewer should not restore the old sample Front Entry tap dot");
@@ -36,7 +36,7 @@ const { tapDotMaxVisibleDistance, tapDotTargetOpacity, tapDotAnimatedOpacity, ta
 
 assert.equal(tapDotMaxVisibleDistance({ maxVisibleDistance: 1.2 }), 1.2, "Explicit maxVisibleDistance should win");
 assert.equal(tapDotMaxVisibleDistance({ maxDistance: 2.25 }), 2.25, "Legacy maxDistance should still work as a fallback");
-assert.equal(tapDotMaxVisibleDistance({}), 0.38, "Missing max visible distance should use the 60% shorter uncluttered default");
+assert.equal(tapDotMaxVisibleDistance({}), 0.24, "Missing max visible distance should use the edited uncluttered default");
 assert.equal(tapDotTargetOpacity(1.19, 0.06, 1.2), 1, "Tap dot should be fully targeted visible until the threshold");
 assert.equal(tapDotTargetOpacity(1.2, 0.06, 1.2), 1, "Tap dot should still be fully targeted visible at the threshold");
 assert.equal(tapDotTargetOpacity(1.21, 0.06, 1.2), 0, "Tap dot should target hidden immediately after the threshold");

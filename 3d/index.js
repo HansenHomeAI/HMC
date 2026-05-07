@@ -7548,12 +7548,12 @@ function tapDotAssetUrl(pathOrUrl) {
 }
 var CANYON_VISTA_TAP_DOTS = [
   {
-    position: { x: 0.22, y: -0.045, z: 0.18 },
+    position: { x: -0.013, y: 0.012, z: -0.021 },
     scale: 0.225,
     icon: "camera",
     caption: "Main House",
     minDistance: 0.06,
-    maxVisibleDistance: 0.38,
+    maxVisibleDistance: 0.24,
     photos: [
       "https://spcprt.com/spaces/media/users/d8914320-9061-70dd-72d5-0e5878ed821c/projects/78659e97-7978-43f6-88b8-577e45f182de/photos/Main%20House/4800%20Meadow%20Ln%20MLS01%20copy.jpg",
       "https://spcprt.com/spaces/media/users/d8914320-9061-70dd-72d5-0e5878ed821c/projects/78659e97-7978-43f6-88b8-577e45f182de/photos/Main%20House/4800%20Meadow%20Ln%20MLS02%20copy.jpg",
@@ -7610,12 +7610,12 @@ var CANYON_VISTA_TAP_DOTS = [
     ]
   },
   {
-    position: { x: 0.04, y: -0.05, z: 0.08 },
+    position: { x: 0.014, y: 0.01, z: 0.021 },
     scale: 0.225,
     icon: "camera",
     caption: "Attached Shop and Studio/Guest Apt",
     minDistance: 0.06,
-    maxVisibleDistance: 0.38,
+    maxVisibleDistance: 0.24,
     photos: [
       "https://spcprt.com/spaces/media/users/d8914320-9061-70dd-72d5-0e5878ed821c/projects/78659e97-7978-43f6-88b8-577e45f182de/photos/Attached%20Shop%20and%20Studio/Guest%20Apt/4800%20Meadow%20Ln%20MLS57%20copy.jpg",
       "https://spcprt.com/spaces/media/users/d8914320-9061-70dd-72d5-0e5878ed821c/projects/78659e97-7978-43f6-88b8-577e45f182de/photos/Attached%20Shop%20and%20Studio/Guest%20Apt/4800%20Meadow%20Ln%20MLS58%20copy.jpg",
@@ -7635,12 +7635,12 @@ var CANYON_VISTA_TAP_DOTS = [
     ]
   },
   {
-    position: { x: -0.16, y: -0.05, z: 0.02 },
+    position: { x: 0.121, y: -0.02, z: -0.259 },
     scale: 0.225,
     icon: "camera",
     caption: "Guest/Caretaker Cabin",
     minDistance: 0.06,
-    maxVisibleDistance: 0.38,
+    maxVisibleDistance: 0.24,
     photos: [
       "https://spcprt.com/spaces/media/users/d8914320-9061-70dd-72d5-0e5878ed821c/projects/78659e97-7978-43f6-88b8-577e45f182de/photos/Guest/Caretaker%20Cabin/4800%20Meadow%20Ln%20MLS78%20copy.jpg",
       "https://spcprt.com/spaces/media/users/d8914320-9061-70dd-72d5-0e5878ed821c/projects/78659e97-7978-43f6-88b8-577e45f182de/photos/Guest/Caretaker%20Cabin/4800%20Meadow%20Ln%20MLS79%20copy.jpg",
@@ -7652,12 +7652,12 @@ var CANYON_VISTA_TAP_DOTS = [
     ]
   },
   {
-    position: { x: -0.3, y: -0.055, z: -0.2 },
+    position: { x: 0.125, y: -0.02, z: -0.291 },
     scale: 0.225,
     icon: "camera",
     caption: "Horse Barn",
     minDistance: 0.06,
-    maxVisibleDistance: 0.38,
+    maxVisibleDistance: 0.24,
     photos: [
       "https://spcprt.com/spaces/media/users/d8914320-9061-70dd-72d5-0e5878ed821c/projects/78659e97-7978-43f6-88b8-577e45f182de/photos/Horse%20Barn/4800%20Meadow%20Ln%20MLS02%20copy.jpg",
       "https://spcprt.com/spaces/media/users/d8914320-9061-70dd-72d5-0e5878ed821c/projects/78659e97-7978-43f6-88b8-577e45f182de/photos/Horse%20Barn/4800%20Meadow%20Ln%20MLS04%20copy.jpg",
@@ -14908,7 +14908,7 @@ var import_react7 = __toESM(require_react(), 1);
 var import_jsx_runtime9 = __toESM(require_jsx_runtime(), 1);
 var TAPDOT_CAMERA_ICON = "https://raw.githubusercontent.com/HansenHomeAI/WhiteCameraIcon/main/3TestIcons-9.png";
 var TAP_DOT_DEFAULT_MIN_DISTANCE = 0.04;
-var TAP_DOT_DEFAULT_MAX_VISIBLE_DISTANCE = 0.38;
+var TAP_DOT_DEFAULT_MAX_VISIBLE_DISTANCE = 0.24;
 var TAP_DOT_OPACITY_ANIMATION_MS = 400;
 var TAP_DOT_KEYBOARD_Y_STEP = 0.005;
 function tapDotTargetOpacity(distance, minDistance, maxDistance) {
