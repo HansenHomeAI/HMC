@@ -106,35 +106,67 @@ function manyLinePoints(count) {
   const boundary = parseKmlLotBoundary(kml, "incognito_lot_line.kml");
   const defaultDots = createDefaultLotDots();
   const defaultLines = createDefaultLotLines();
-  assert.equal(boundary.pointCount, 17, "Incognito bundled KML should parse all true lot vertices");
+  assert.equal(boundary.pointCount, 17, "Incognito bundled KML should still parse as an import fixture");
   assert.equal(boundary.sourceKind, "Polygon outerBoundaryIs");
   assert.equal(DEFAULT_INCOGNITO_KML_BOUNDARY.pointCount, boundary.pointCount);
   assert.deepEqual(DEFAULT_INCOGNITO_KML_BOUNDARY.rawPoints, boundary.rawPoints, "Bundled fallback KML boundary should match the parser orientation");
-  assert.equal(JSON.stringify(DEFAULT_INCOGNITO_KML_TRANSFORM), JSON.stringify({ x: 0.054, y: -0.074, z: -0.205, scale: 0.00102, rotation: 11.2 }), "Default Incognito transform should use the user's latest saved lot-line pose");
   assert.equal(JSON.stringify(DEFAULT_LOT_LINE_STYLE), JSON.stringify({ color: "#eaffdb", width: 0.004, height: 0.001, opacity: 0.72 }), "Default lot-line style should use the user's latest width, height, color, and opacity");
-  assert.equal(defaultDots.length, 17, "Default lot line should come from the Incognito KML boundary");
-  assert.equal(defaultLines.length, 17, "Default lot line should be a closed Incognito loop");
+  assert.equal(defaultDots.length, 25, "Default lot line should use the user's latest edited 25-vertex JSON");
+  assert.equal(defaultLines.length, 25, "Default lot line should use the user's latest edited 25-segment graph");
   assert.equal(JSON.stringify(defaultDots.map((d) => d.position)), JSON.stringify([
-    { x: -0.384, y: -0.074, z: -0.343 },
-    { x: -0.26, y: -0.074, z: -0.399 },
-    { x: -0.149, y: -0.074, z: -0.431 },
-    { x: 0.009, y: -0.074, z: -0.458 },
-    { x: 0.198, y: -0.074, z: -0.475 },
-    { x: 0.324, y: -0.074, z: -0.455 },
-    { x: 0.498, y: -0.074, z: -0.419 },
-    { x: 0.512, y: -0.074, z: -0.17 },
-    { x: 0.5, y: -0.074, z: -0.146 },
-    { x: 0.474, y: -0.074, z: -0.133 },
-    { x: 0.353, y: -0.074, z: -0.131 },
-    { x: 0.286, y: -0.074, z: -0.112 },
-    { x: 0.266, y: -0.074, z: -0.068 },
-    { x: 0.294, y: -0.074, z: 0.034 },
-    { x: 0.379, y: -0.074, z: 0.153 },
-    { x: -0.103, y: -0.074, z: 0.067 },
-    { x: -0.109, y: -0.074, z: -0.012 }
+    { x: -0.378, y: -0.084, z: -0.331 },
+    { x: -0.255, y: -0.094, z: -0.387 },
+    { x: -0.146, y: -0.101, z: -0.421 },
+    { x: 0.01, y: -0.11, z: -0.451 },
+    { x: 0.201, y: -0.12, z: -0.463 },
+    { x: 0.322, y: -0.123, z: -0.451 },
+    { x: 0.515, y: -0.12, z: -0.414 },
+    { x: 0.517, y: -0.1, z: -0.177 },
+    { x: 0.5, y: -0.101, z: -0.146 },
+    { x: 0.474, y: -0.101, z: -0.133 },
+    { x: 0.353, y: -0.1, z: -0.131 },
+    { x: 0.295, y: -0.095, z: -0.105 },
+    { x: 0.274, y: -0.093, z: -0.057 },
+    { x: 0.294, y: -0.085, z: 0.034 },
+    { x: 0.383, y: -0.074, z: 0.157 },
+    { x: -0.085, y: -0.081, z: 0.067 },
+    { x: -0.117, y: -0.091, z: 0.004 },
+    { x: 0.184, y: -0.081, z: 0.121 },
+    { x: -0.022, y: -0.074, z: 0.081 },
+    { x: 0.093, y: -0.087, z: 0.104 },
+    { x: -0.25, y: -0.076, z: -0.169 },
+    { x: 0.318, y: -0.097, z: -0.123 },
+    { x: 0.274, y: -0.089, z: -0.011 },
+    { x: 0.284, y: -0.084, z: 0.139 },
+    { x: 0.334, y: -0.087, z: 0.148 }
   ]), "Default lot line should use the user's latest copied JSON vertex positions");
-  assert.equal(defaultLines.at(-1).start, "KML_V17");
-  assert.equal(defaultLines.at(-1).end, "KML_V1");
+  assert.equal(JSON.stringify(defaultLines), JSON.stringify([
+    { start: "KML_V1", end: "KML_V2" },
+    { start: "KML_V2", end: "KML_V3" },
+    { start: "KML_V3", end: "KML_V4" },
+    { start: "KML_V4", end: "KML_V5" },
+    { start: "KML_V5", end: "KML_V6" },
+    { start: "KML_V6", end: "KML_V7" },
+    { start: "KML_V7", end: "KML_V8" },
+    { start: "KML_V8", end: "KML_V9" },
+    { start: "KML_V9", end: "KML_V10" },
+    { start: "KML_V10", end: "KML_V11" },
+    { start: "KML_V11", end: "KML_V22" },
+    { start: "KML_V22", end: "KML_V12" },
+    { start: "KML_V12", end: "KML_V13" },
+    { start: "KML_V13", end: "KML_V23" },
+    { start: "KML_V23", end: "KML_V14" },
+    { start: "KML_V14", end: "KML_V15" },
+    { start: "KML_V15", end: "KML_V25" },
+    { start: "KML_V25", end: "KML_V24" },
+    { start: "KML_V24", end: "KML_V18" },
+    { start: "KML_V18", end: "KML_V20" },
+    { start: "KML_V20", end: "KML_V19" },
+    { start: "KML_V19", end: "KML_V16" },
+    { start: "KML_V16", end: "KML_V17" },
+    { start: "KML_V17", end: "KML_V21" },
+    { start: "KML_V21", end: "KML_V1" }
+  ]), "Default lot line should use the user's latest copied JSON segment graph");
 }
 
 {
@@ -148,8 +180,6 @@ function manyLinePoints(count) {
 
 assert.match(source, /var DEFAULT_INCOGNITO_KML_URL = "assets\/incognito_lot_line\.kml";/, "Default Incognito KML asset path should be explicit in the app");
 assert.match(source, /var DEFAULT_KML_LOT_TRANSFORM = \{ x: 0, y: 0, z: 0, scale: 1, rotation: 0 \};/, "Default KML should sit high enough to be visible before manual Y adjustment");
-assert.match(source, /var DEFAULT_INCOGNITO_KML_TRANSFORM = \{ \.\.\.DEFAULT_KML_LOT_TRANSFORM, x: 0\.054, y: -0\.074, z: -0\.205, scale: 0\.00102, rotation: 11\.2 \};/, "Default Incognito KML should use the user's saved aligned transform");
-assert.match(source, /const transform = DEFAULT_INCOGNITO_KML_TRANSFORM;/, "Bundled Incognito KML reload should preserve the saved aligned transform");
 assert.match(source, /const \[showLotLines, setShowLotLines\] = \(0, import_react9\.useState\)\(true\);/, "Lot lines should be visible by default");
 assert.match(source, /const \[lotLineEditorOpen, setLotLineEditorOpen\] = \(0, import_react9\.useState\)\(false\);/, "Lot line editor should not open just because lot lines are visible");
 assert.match(source, /const \[lotLineEditorCollapsed, setLotLineEditorCollapsed\] = \(0, import_react9\.useState\)\(false\);/, "Lot line editor should support collapsing the controls while staying selected");
@@ -222,7 +252,6 @@ assert.match(bridgeSource, /function buildUnitLotVertexMesh\(app\)/, "Iframe lot
 assert.match(bridgeSource, /new Entity\(`lotLineVertex:\$\{dot\.name\}`/, "Iframe lot line renderer should create a cap at every lot vertex");
 assert.match(bridgeSource, /ent\.setLocalScale\(style\.width, style\.height, style\.width\)/, "Lot vertex caps should use a top-down circular width and vertical height matching the lot line style");
 assert.match(bridgeSource, /catch \(error\) \{[\s\S]*?Lot line vertex caps failed; rendering line segments only\./, "Lot line segments should stay visible even if rounded vertex cap geometry fails");
-assert.match(source, /fetch\(tapDotAssetUrl\(DEFAULT_INCOGNITO_KML_URL\)\)/, "The bundled KML file should be imported at runtime, not only hardcoded");
 assert.match(source, /id: "lot-line-kml-scale"[\s\S]*?step: "0\.0001"/, "KML scale spinner should use fine 0.0001 increments");
 for (const id of ["lot-line-kml-x", "lot-line-kml-y", "lot-line-kml-z", "lot-line-x", "lot-line-y", "lot-line-z"]) {
   assert.match(source, new RegExp(`id: "${id}"[\\s\\S]*?step: "0\\.001"`), `${id} spinner should use fine 0.001 unit increments`);

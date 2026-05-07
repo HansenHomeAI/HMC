@@ -21,13 +21,13 @@ if (!source.includes("TAP_DOT_DEFAULT_MAX_VISIBLE_DISTANCE") || !source.includes
   throw new Error("TapDotsOverlay must include distance threshold behavior.");
 }
 
-if (!source.includes("var TAP_DOT_DEFAULT_MAX_VISIBLE_DISTANCE = 0.95;")) {
-  throw new Error("Tap dot default max visible distance must stay about 30% shorter to declutter zoomed-out views.");
+if (!source.includes("var TAP_DOT_DEFAULT_MAX_VISIBLE_DISTANCE = 0.38;")) {
+  throw new Error("Tap dot default max visible distance must stay about 60% shorter to declutter zoomed-out views.");
 }
 
-const tapDotMaxVisibleDistanceMatches = source.match(/maxVisibleDistance: 0\.95/g) || [];
+const tapDotMaxVisibleDistanceMatches = source.match(/maxVisibleDistance: 0\.38/g) || [];
 if (tapDotMaxVisibleDistanceMatches.length < 4) {
-  throw new Error("Bundled Incognito tap dots must use explicit 30% shorter per-dot max visible distances.");
+  throw new Error("Bundled Incognito tap dots must use explicit 60% shorter per-dot max visible distances.");
 }
 
 if (!source.includes("maxRadiusFromOrigin: 50")) {

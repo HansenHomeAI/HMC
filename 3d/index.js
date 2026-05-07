@@ -7553,7 +7553,7 @@ var CANYON_VISTA_TAP_DOTS = [
     icon: "camera",
     caption: "Main House",
     minDistance: 0.06,
-    maxVisibleDistance: 0.95,
+    maxVisibleDistance: 0.38,
     photos: [
       "https://spcprt.com/spaces/media/users/d8914320-9061-70dd-72d5-0e5878ed821c/projects/78659e97-7978-43f6-88b8-577e45f182de/photos/Main%20House/4800%20Meadow%20Ln%20MLS01%20copy.jpg",
       "https://spcprt.com/spaces/media/users/d8914320-9061-70dd-72d5-0e5878ed821c/projects/78659e97-7978-43f6-88b8-577e45f182de/photos/Main%20House/4800%20Meadow%20Ln%20MLS02%20copy.jpg",
@@ -7615,7 +7615,7 @@ var CANYON_VISTA_TAP_DOTS = [
     icon: "camera",
     caption: "Attached Shop and Studio/Guest Apt",
     minDistance: 0.06,
-    maxVisibleDistance: 0.95,
+    maxVisibleDistance: 0.38,
     photos: [
       "https://spcprt.com/spaces/media/users/d8914320-9061-70dd-72d5-0e5878ed821c/projects/78659e97-7978-43f6-88b8-577e45f182de/photos/Attached%20Shop%20and%20Studio/Guest%20Apt/4800%20Meadow%20Ln%20MLS57%20copy.jpg",
       "https://spcprt.com/spaces/media/users/d8914320-9061-70dd-72d5-0e5878ed821c/projects/78659e97-7978-43f6-88b8-577e45f182de/photos/Attached%20Shop%20and%20Studio/Guest%20Apt/4800%20Meadow%20Ln%20MLS58%20copy.jpg",
@@ -7640,7 +7640,7 @@ var CANYON_VISTA_TAP_DOTS = [
     icon: "camera",
     caption: "Guest/Caretaker Cabin",
     minDistance: 0.06,
-    maxVisibleDistance: 0.95,
+    maxVisibleDistance: 0.38,
     photos: [
       "https://spcprt.com/spaces/media/users/d8914320-9061-70dd-72d5-0e5878ed821c/projects/78659e97-7978-43f6-88b8-577e45f182de/photos/Guest/Caretaker%20Cabin/4800%20Meadow%20Ln%20MLS78%20copy.jpg",
       "https://spcprt.com/spaces/media/users/d8914320-9061-70dd-72d5-0e5878ed821c/projects/78659e97-7978-43f6-88b8-577e45f182de/photos/Guest/Caretaker%20Cabin/4800%20Meadow%20Ln%20MLS79%20copy.jpg",
@@ -7657,7 +7657,7 @@ var CANYON_VISTA_TAP_DOTS = [
     icon: "camera",
     caption: "Horse Barn",
     minDistance: 0.06,
-    maxVisibleDistance: 0.95,
+    maxVisibleDistance: 0.38,
     photos: [
       "https://spcprt.com/spaces/media/users/d8914320-9061-70dd-72d5-0e5878ed821c/projects/78659e97-7978-43f6-88b8-577e45f182de/photos/Horse%20Barn/4800%20Meadow%20Ln%20MLS02%20copy.jpg",
       "https://spcprt.com/spaces/media/users/d8914320-9061-70dd-72d5-0e5878ed821c/projects/78659e97-7978-43f6-88b8-577e45f182de/photos/Horse%20Barn/4800%20Meadow%20Ln%20MLS04%20copy.jpg",
@@ -7739,11 +7739,65 @@ var LOT_LINE_KEYBOARD_Y_STEP = 0.001;
 function roundLotCoord(n) {
   return Math.round(n * 1e3) / 1e3;
 }
+var DEFAULT_LOT_DOTS = [
+  { name: "KML_V1", position: { x: -0.378, y: -0.084, z: -0.331 } },
+  { name: "KML_V2", position: { x: -0.255, y: -0.094, z: -0.387 } },
+  { name: "KML_V3", position: { x: -0.146, y: -0.101, z: -0.421 } },
+  { name: "KML_V4", position: { x: 0.01, y: -0.11, z: -0.451 } },
+  { name: "KML_V5", position: { x: 0.201, y: -0.12, z: -0.463 } },
+  { name: "KML_V6", position: { x: 0.322, y: -0.123, z: -0.451 } },
+  { name: "KML_V7", position: { x: 0.515, y: -0.12, z: -0.414 } },
+  { name: "KML_V8", position: { x: 0.517, y: -0.1, z: -0.177 } },
+  { name: "KML_V9", position: { x: 0.5, y: -0.101, z: -0.146 } },
+  { name: "KML_V10", position: { x: 0.474, y: -0.101, z: -0.133 } },
+  { name: "KML_V11", position: { x: 0.353, y: -0.1, z: -0.131 } },
+  { name: "KML_V12", position: { x: 0.295, y: -0.095, z: -0.105 } },
+  { name: "KML_V13", position: { x: 0.274, y: -0.093, z: -0.057 } },
+  { name: "KML_V14", position: { x: 0.294, y: -0.085, z: 0.034 } },
+  { name: "KML_V15", position: { x: 0.383, y: -0.074, z: 0.157 } },
+  { name: "KML_V16", position: { x: -0.085, y: -0.081, z: 0.067 } },
+  { name: "KML_V17", position: { x: -0.117, y: -0.091, z: 0.004 } },
+  { name: "KML_V18", position: { x: 0.184, y: -0.081, z: 0.121 } },
+  { name: "KML_V19", position: { x: -0.022, y: -0.074, z: 0.081 } },
+  { name: "KML_V20", position: { x: 0.093, y: -0.087, z: 0.104 } },
+  { name: "KML_V21", position: { x: -0.25, y: -0.076, z: -0.169 } },
+  { name: "KML_V22", position: { x: 0.318, y: -0.097, z: -0.123 } },
+  { name: "KML_V23", position: { x: 0.274, y: -0.089, z: -0.011 } },
+  { name: "KML_V24", position: { x: 0.284, y: -0.084, z: 0.139 } },
+  { name: "KML_V25", position: { x: 0.334, y: -0.087, z: 0.148 } }
+];
+var DEFAULT_LOT_LINES = [
+  { start: "KML_V1", end: "KML_V2" },
+  { start: "KML_V2", end: "KML_V3" },
+  { start: "KML_V3", end: "KML_V4" },
+  { start: "KML_V4", end: "KML_V5" },
+  { start: "KML_V5", end: "KML_V6" },
+  { start: "KML_V6", end: "KML_V7" },
+  { start: "KML_V7", end: "KML_V8" },
+  { start: "KML_V8", end: "KML_V9" },
+  { start: "KML_V9", end: "KML_V10" },
+  { start: "KML_V10", end: "KML_V11" },
+  { start: "KML_V11", end: "KML_V22" },
+  { start: "KML_V22", end: "KML_V12" },
+  { start: "KML_V12", end: "KML_V13" },
+  { start: "KML_V13", end: "KML_V23" },
+  { start: "KML_V23", end: "KML_V14" },
+  { start: "KML_V14", end: "KML_V15" },
+  { start: "KML_V15", end: "KML_V25" },
+  { start: "KML_V25", end: "KML_V24" },
+  { start: "KML_V24", end: "KML_V18" },
+  { start: "KML_V18", end: "KML_V20" },
+  { start: "KML_V20", end: "KML_V19" },
+  { start: "KML_V19", end: "KML_V16" },
+  { start: "KML_V16", end: "KML_V17" },
+  { start: "KML_V17", end: "KML_V21" },
+  { start: "KML_V21", end: "KML_V1" }
+];
 function createDefaultLotLines() {
-  return createDefaultIncognitoLotLineBuild().lines;
+  return DEFAULT_LOT_LINES.map((line) => ({ ...line }));
 }
 function createDefaultLotDots() {
-  return createDefaultIncognitoLotLineBuild().dots;
+  return DEFAULT_LOT_DOTS.map((dot) => ({ name: dot.name, position: { ...dot.position } }));
 }
 function createNextLotVertexName(dots) {
   const prefix = dots.length > 0 && dots.every((d) => d.name.startsWith("KML_V")) ? "KML_V" : "Lot_V";
@@ -14850,7 +14904,7 @@ var import_react7 = __toESM(require_react(), 1);
 var import_jsx_runtime9 = __toESM(require_jsx_runtime(), 1);
 var TAPDOT_CAMERA_ICON = "https://raw.githubusercontent.com/HansenHomeAI/WhiteCameraIcon/main/3TestIcons-9.png";
 var TAP_DOT_DEFAULT_MIN_DISTANCE = 0.04;
-var TAP_DOT_DEFAULT_MAX_VISIBLE_DISTANCE = 0.95;
+var TAP_DOT_DEFAULT_MAX_VISIBLE_DISTANCE = 0.38;
 var TAP_DOT_OPACITY_ANIMATION_MS = 400;
 var TAP_DOT_KEYBOARD_Y_STEP = 0.005;
 function tapDotTargetOpacity(distance, minDistance, maxDistance) {
@@ -15283,9 +15337,9 @@ function SogsMigratedViewer({
   const [lotLines, setLotLines] = (0, import_react9.useState)(() => createDefaultLotLines());
   const [lotLineStyle, setLotLineStyle] = (0, import_react9.useState)(DEFAULT_LOT_LINE_STYLE);
   const [lotLineColorText, setLotLineColorText] = (0, import_react9.useState)(DEFAULT_LOT_LINE_STYLE.color);
-  const [kmlBoundary, setKmlBoundary] = (0, import_react9.useState)(DEFAULT_INCOGNITO_KML_BOUNDARY);
-  const [kmlTransform, setKmlTransform] = (0, import_react9.useState)(DEFAULT_INCOGNITO_KML_TRANSFORM);
-  const [kmlStatus, setKmlStatus] = (0, import_react9.useState)(`Loaded ${DEFAULT_INCOGNITO_KML_BOUNDARY.pointCount} Incognito KML vertices around origin.`);
+  const [kmlBoundary, setKmlBoundary] = (0, import_react9.useState)(null);
+  const [kmlTransform, setKmlTransform] = (0, import_react9.useState)(DEFAULT_KML_LOT_TRANSFORM);
+  const [kmlStatus, setKmlStatus] = (0, import_react9.useState)(`Loaded ${DEFAULT_LOT_DOTS.length} saved Incognito vertices.`);
   const [selectedLotPointName, setSelectedLotPointName] = (0, import_react9.useState)(() => createDefaultLotDots()[0]?.name ?? "");
   const [pathVersion, setPathVersion] = (0, import_react9.useState)(0);
   const [photoDot, setPhotoDot] = (0, import_react9.useState)(null);
@@ -15396,9 +15450,9 @@ function SogsMigratedViewer({
     return () => window.removeEventListener("keydown", onLotLineKeyDown);
   }, [handleLotLineKeyboardKey]);
   const resetLotDots = (0, import_react9.useCallback)(() => {
-    setKmlBoundary(DEFAULT_INCOGNITO_KML_BOUNDARY);
-    setKmlTransform(DEFAULT_INCOGNITO_KML_TRANSFORM);
-    setKmlStatus(`Loaded ${DEFAULT_INCOGNITO_KML_BOUNDARY.pointCount} Incognito KML vertices around origin.`);
+    setKmlBoundary(null);
+    setKmlTransform(DEFAULT_KML_LOT_TRANSFORM);
+    setKmlStatus(`Loaded ${DEFAULT_LOT_DOTS.length} saved Incognito vertices.`);
     setLotDots(createDefaultLotDots());
     setLotLines(createDefaultLotLines());
     setSelectedLotPointName(createDefaultLotDots()[0]?.name ?? "");
@@ -15423,35 +15477,6 @@ function SogsMigratedViewer({
     } finally {
       event.target.value = "";
     }
-  }, []);
-  (0, import_react9.useEffect)(() => {
-    let cancelled = false;
-    const loadDefaultKml = async () => {
-      try {
-        const response = await fetch(tapDotAssetUrl(DEFAULT_INCOGNITO_KML_URL));
-        if (!response.ok) {
-          throw new Error(`HTTP ${response.status}`);
-        }
-        const boundary = parseKmlLotBoundary(await response.text(), "incognito_lot_line.kml");
-        if (cancelled || userImportedKmlRef.current) return;
-        const transform = DEFAULT_INCOGNITO_KML_TRANSFORM;
-        const built = buildLotFromKmlBoundary(boundary, transform);
-        setKmlBoundary(boundary);
-        setKmlTransform(transform);
-        setLotDots(built.dots);
-        setLotLines(built.lines);
-        setSelectedLotPointName(built.dots[0]?.name ?? "");
-        setShowLotLines(true);
-        setKmlStatus(`Loaded ${boundary.pointCount} vertices from ${DEFAULT_INCOGNITO_KML_URL} around origin.`);
-      } catch (err) {
-        if (cancelled || userImportedKmlRef.current) return;
-        setKmlStatus(`Using bundled fallback: ${DEFAULT_INCOGNITO_KML_BOUNDARY.pointCount} Incognito KML vertices around origin.`);
-      }
-    };
-    loadDefaultKml();
-    return () => {
-      cancelled = true;
-    };
   }, []);
   const updateKmlTransform = (0, import_react9.useCallback)((patch) => {
     setKmlTransform((current) => ({ ...current, ...patch }));
