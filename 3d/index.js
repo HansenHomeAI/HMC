@@ -7682,6 +7682,10 @@ function cloneTapDots() {
     photos: Array.isArray(dot.photos) ? [...dot.photos] : dot.photos
   }));
 }
+function normalizeTapDotMaxVisibleDistance(value, fallback = TAP_DOT_DEFAULT_MAX_VISIBLE_DISTANCE) {
+  const n = Number(value);
+  return Number.isFinite(n) ? Math.max(0.05, Math.min(50, Math.round(n * 100) / 100)) : fallback;
+}
 var CANYON_VISTA_BORDER_DOTS = [
   { name: "Lot_V1", position: { x: 0.619899, y: -0.07236, z: 0.910146 } },
   { name: "Lot_V4", position: { x: 0.613988, y: -0.12955, z: -0.646242 } },
@@ -15388,6 +15392,10 @@ function SogsMigratedViewer({
     setTapDots((dots) => dots.map((d) => d.caption === caption ? { ...d, caption: normalized } : d));
     setSelectedTapDotCaption(normalized);
   }, []);
+  const updateAllTapDotMaxVisibleDistance = (0, import_react9.useCallback)((value) => {
+    const maxVisibleDistance = normalizeTapDotMaxVisibleDistance(value);
+    setTapDots((dots) => dots.map((d) => ({ ...d, maxVisibleDistance })));
+  }, []);
   const updateLotDotPosition = (0, import_react9.useCallback)((name, position) => {
     setSelectedLotPointName(name);
     setLotDots((dots) => dots.map((d) => d.name === name ? { ...d, position: { x: roundSplatThousandths(position.x), y: roundSplatThousandths(position.y), z: roundSplatThousandths(position.z) } } : d));
@@ -16440,6 +16448,23 @@ function SogsMigratedViewer({
             /* @__PURE__ */ (0, import_jsx_runtime11.jsx)("button", { type: "button", className: "animation-editor-close", "aria-label": "Close tap dot editor", onClick: () => setTapDotEditorOpen(false), children: "\xD7" })
           ] }),
           /* @__PURE__ */ (0, import_jsx_runtime11.jsx)("div", { className: "lot-editor-status animation-editor-status-compact", children: toggleDisabled ? "Loading\u2026" : "Select a tap dot, drag it in the viewer, rename it, or adjust its vertical height." }),
+          /* @__PURE__ */ (0, import_jsx_runtime11.jsxs)("div", { className: "lot-editor-field", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime11.jsx)("label", { htmlFor: "tap-dot-max-visible-distance", children: "Max visibility distance" }),
+            /* @__PURE__ */ (0, import_jsx_runtime11.jsx)(
+              "input",
+              {
+                id: "tap-dot-max-visible-distance",
+                "data-testid": "tap-dot-max-visible-distance",
+                type: "number",
+                min: "0.05",
+                max: "50",
+                step: "0.01",
+                disabled: toggleDisabled,
+                value: normalizeTapDotMaxVisibleDistance(tapDots[0]?.maxVisibleDistance),
+                onChange: (e) => updateAllTapDotMaxVisibleDistance(e.target.value)
+              }
+            )
+          ] }),
           /* @__PURE__ */ (0, import_jsx_runtime11.jsxs)("div", { className: "lot-editor-field", children: [
             /* @__PURE__ */ (0, import_jsx_runtime11.jsx)("label", { htmlFor: "tap-dot-picker", children: "Tap dot" }),
             /* @__PURE__ */ (0, import_jsx_runtime11.jsx)(

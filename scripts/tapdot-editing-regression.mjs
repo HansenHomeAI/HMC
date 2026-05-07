@@ -29,6 +29,10 @@ if (!source.includes("updateTapDotCaption")) {
   throw new Error("Tap dot editor should expose a title updater so the selected label can be renamed.");
 }
 
+if (!source.includes("updateAllTapDotMaxVisibleDistance")) {
+  throw new Error("Tap dot editor should expose one shared max-visibility updater for every tap dot.");
+}
+
 if (!source.includes("TAP_DOT_KEYBOARD_Y_STEP")) {
   throw new Error("Tap dot editor should support small keyboard Y-axis edits.");
 }
@@ -63,6 +67,14 @@ if (!source.includes('id: "tapDotEditorPanel"') || !source.includes('data-testid
 
 if (!source.includes('data-testid": "tap-dot-title"') || !source.includes('data-testid": "tap-dot-y"')) {
   throw new Error("Tap dot editor panel should include title and Y-axis inputs for the selected tap dot.");
+}
+
+if (!source.includes('data-testid": "tap-dot-max-visible-distance"') || !source.includes('onChange: (e) => updateAllTapDotMaxVisibleDistance(e.target.value)')) {
+  throw new Error("Tap dot editor panel should include one shared max visibility distance control.");
+}
+
+if (!source.includes("setTapDots((dots) => dots.map((d) => ({ ...d, maxVisibleDistance })))")) {
+  throw new Error("Shared max visibility edits should apply to every tap dot together.");
 }
 
 if (!source.includes("tap-dot-editor-grid") || !css.includes(".tap-dot-editor-grid")) {
