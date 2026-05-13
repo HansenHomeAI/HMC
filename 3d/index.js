@@ -14938,6 +14938,11 @@ function tapDotScreenCoord(value) {
   const n = Number(value);
   return Number.isFinite(n) ? Math.round(n * 100) / 100 : 0;
 }
+function tapDotStackZIndex(distance, index = 0) {
+  const d = Number(distance);
+  if (!Number.isFinite(d)) return 1;
+  return Math.max(1, 1e6 - Math.round(d * 1e4) + index);
+}
 function TapDotsOverlay({ enabled, tapDots, iframeRef, containerRef, onOpenPhotos, editable = false, selectedCaption = "", onPointMove, onPointSelect }) {
   const buttonRefs = (0, import_react7.useRef)([]);
   const opacityRefs = (0, import_react7.useRef)([]);
@@ -14994,6 +14999,7 @@ function TapDotsOverlay({ enabled, tapDots, iframeRef, containerRef, onOpenPhoto
           button.style.transform = `translate3d(${tapDotScreenCoord(x)}px, ${tapDotScreenCoord(y)}px, 0) translate(-50%, -100%)`;
           button.style.opacity = String(animatedOpacity);
           button.style.filter = `blur(${tapDotBlurForOpacity(animatedOpacity)}px)`;
+          button.style.zIndex = String(tapDotStackZIndex(distance, i));
           button.style.display = visible ? "inline-flex" : "none";
           button.setAttribute("aria-hidden", visible ? "false" : "true");
         });

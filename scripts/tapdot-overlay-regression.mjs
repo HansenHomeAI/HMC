@@ -13,6 +13,10 @@ if (!tapDotsOverlay.includes("__sogsProjectWorldPoint")) {
   throw new Error("TapDotsOverlay must use the viewer projection bridge so dots stay pinned to the viewer camera.");
 }
 
+if (!source.includes("function tapDotStackZIndex(distance, index = 0)") || !tapDotsOverlay.includes("button.style.zIndex = String(tapDotStackZIndex(distance, i));")) {
+  throw new Error("TapDotsOverlay should stack overlapping labels by camera distance, not static DOM order.");
+}
+
 if (tapDotsOverlay.includes("createOverlayPerspectiveCamera") || tapDotsOverlay.includes("syncOverlayCamera")) {
   throw new Error("TapDotsOverlay must not use the old parent-side camera approximation.");
 }

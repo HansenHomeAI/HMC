@@ -12,6 +12,7 @@ assert.match(source, /function tapDotMaxVisibleDistance\(tapDot\)/, "Tap dots sh
 assert.match(source, /function tapDotTargetOpacity\(distance, minDistance, maxDistance\)/, "Tap dot distance should resolve to a binary threshold target opacity");
 assert.match(source, /function tapDotAnimatedOpacity\(current, target, deltaMs\)/, "Tap dots should smooth opacity changes with a fixed-rate helper");
 assert.match(source, /function tapDotBlurForOpacity\(opacity\)/, "Tap dots should get a blur value from animation progress, not viewing distance");
+assert.match(source, /function tapDotStackZIndex\(distance, index = 0\)/, "Tap dots should compute stacking from camera distance");
 assert.match(tapDotsOverlay, /const maxDistance = tapDotMaxVisibleDistance\(td\);/, "TapDotsOverlay should use the per-dot max visible distance resolver");
 assert.match(tapDotsOverlay, /const targetOpacity = tapDotTargetOpacity\(distance, minDistance, maxDistance\);/, "TapDotsOverlay should use a binary distance threshold instead of distance-proportional opacity");
 assert.match(tapDotsOverlay, /const previousOpacity = opacityRefs\.current\[i\] \?\? 0;/, "Newly visible tap dots should fade in from zero instead of appearing fully opaque");
@@ -30,9 +31,10 @@ const maxVisibleFn = source.match(/function tapDotMaxVisibleDistance\(tapDot\) \
 const targetOpacityFn = source.match(/function tapDotTargetOpacity\(distance, minDistance, maxDistance\) \{[\s\S]*?\n\}/)?.[0] || "";
 const animatedOpacityFn = source.match(/function tapDotAnimatedOpacity\(current, target, deltaMs\) \{[\s\S]*?\n\}/)?.[0] || "";
 const blurFn = source.match(/function tapDotBlurForOpacity\(opacity\) \{[\s\S]*?\n\}/)?.[0] || "";
-assert.ok(constants && maxVisibleFn && targetOpacityFn && animatedOpacityFn && blurFn, "Tap dot distance helpers should be extractable");
+const stackZIndexFn = source.match(/function tapDotStackZIndex\(distance, index = 0\) \{[\s\S]*?\n\}/)?.[0] || "";
+assert.ok(constants && maxVisibleFn && targetOpacityFn && animatedOpacityFn && blurFn && stackZIndexFn, "Tap dot distance helpers should be extractable");
 
-const { tapDotMaxVisibleDistance, tapDotTargetOpacity, tapDotAnimatedOpacity, tapDotBlurForOpacity } = new Function(`${constants}\n${maxVisibleFn}\n${targetOpacityFn}\n${animatedOpacityFn}\n${blurFn}\nreturn { tapDotMaxVisibleDistance, tapDotTargetOpacity, tapDotAnimatedOpacity, tapDotBlurForOpacity };`)();
+const { tapDotMaxVisibleDistance, tapDotTargetOpacity, tapDotAnimatedOpacity, tapDotBlurForOpacity, tapDotStackZIndex } = new Function(`${constants}\n${maxVisibleFn}\n${targetOpacityFn}\n${animatedOpacityFn}\n${blurFn}\n${stackZIndexFn}\nreturn { tapDotMaxVisibleDistance, tapDotTargetOpacity, tapDotAnimatedOpacity, tapDotBlurForOpacity, tapDotStackZIndex };`)();
 
 assert.equal(tapDotMaxVisibleDistance({ maxVisibleDistance: 1.2 }), 1.2, "Explicit maxVisibleDistance should win");
 assert.equal(tapDotMaxVisibleDistance({ maxDistance: 2.25 }), 2.25, "Legacy maxDistance should still work as a fallback");
@@ -48,5 +50,7 @@ assert.equal(tapDotAnimatedOpacity(1, 0, 1000), 0, "Long frames should clamp at 
 assert.equal(tapDotAnimatedOpacity(0, 1, 200), 0.5, "Fade-in should use the same fixed 400ms animation rate");
 assert.equal(tapDotBlurForOpacity(0), 6, "Fully hidden tap dots should be blurred during transition");
 assert.equal(tapDotBlurForOpacity(1), 0, "Fully visible tap dots should be sharp");
+assert.ok(tapDotStackZIndex(0.12, 0) > tapDotStackZIndex(0.18, 1), "Closer tap dots should stack above farther overlapping tap dots");
+assert.ok(tapDotStackZIndex(0.18, 1) > tapDotStackZIndex(0.22, 0), "Stacking should be distance driven across render order");
 
 console.log("Tap dot distance regression checks passed.");
