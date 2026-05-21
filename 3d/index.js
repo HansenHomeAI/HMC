@@ -15349,7 +15349,7 @@ function SogsMigratedViewer({
   const [tapDotEditorOpen, setTapDotEditorOpen] = (0, import_react9.useState)(false);
   const [tapDots, setTapDots] = (0, import_react9.useState)(() => cloneTapDots());
   const [selectedTapDotCaption, setSelectedTapDotCaption] = (0, import_react9.useState)(() => CANYON_VISTA_TAP_DOTS[0]?.caption ?? "");
-  const [showLotLines, setShowLotLines] = (0, import_react9.useState)(true);
+  const [showLotLines, setShowLotLines] = (0, import_react9.useState)(false);
   const [lotLineEditorOpen, setLotLineEditorOpen] = (0, import_react9.useState)(false);
   const [lotLineEditorCollapsed, setLotLineEditorCollapsed] = (0, import_react9.useState)(false);
   const [showSoldLabels, setShowSoldLabels] = (0, import_react9.useState)(false);
@@ -15939,7 +15939,7 @@ function SogsMigratedViewer({
     postToWindow(iframeRef.current?.contentWindow, {
       style: lotLineStyle,
       type: "sogs:lotLines",
-      enabled: showLotLines,
+      enabled: false,
       dots: lotDots,
       lines: lotLines
     });
@@ -16213,7 +16213,7 @@ function SogsMigratedViewer({
       /* @__PURE__ */ (0, import_jsx_runtime11.jsx)(
         LotLinesOverlay,
         {
-          enabled: viewerState === "ready" && showLotLines,
+          enabled: false,
           borderDots: lotDots,
           borderLines: lotLines,
           editable: lotLineEditorOpen,
@@ -16291,7 +16291,7 @@ function SogsMigratedViewer({
           ] })
         }
       ) }),
-      /* @__PURE__ */ (0, import_jsx_runtime11.jsx)("div", { className: "lot-editor-toggle-wrap", children: /* @__PURE__ */ (0, import_jsx_runtime11.jsx)(
+      false ? /* @__PURE__ */ (0, import_jsx_runtime11.jsx)("div", { className: "lot-editor-toggle-wrap", children: /* @__PURE__ */ (0, import_jsx_runtime11.jsx)(
         "button",
         {
           type: "button",
@@ -16315,7 +16315,7 @@ function SogsMigratedViewer({
             /* @__PURE__ */ (0, import_jsx_runtime11.jsx)("path", { d: "M18 6l1.2-1.2a1.8 1.8 0 1 1 2.5 2.5L20.5 8.5" })
           ] })
         }
-      ) }),
+      ) }) : null,
       /* @__PURE__ */ (0, import_jsx_runtime11.jsx)("div", { className: "lot-editor-toggle-wrap", children: /* @__PURE__ */ (0, import_jsx_runtime11.jsx)(
         "button",
         {
@@ -16561,7 +16561,7 @@ function SogsMigratedViewer({
         ]
       }
     ) : null,
-    developerToolsEnabled ? /* @__PURE__ */ (0, import_jsx_runtime11.jsxs)(
+    false ? /* @__PURE__ */ (0, import_jsx_runtime11.jsxs)(
       "div",
       {
         id: "lotLineEditorPanel",

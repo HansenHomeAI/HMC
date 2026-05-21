@@ -180,7 +180,7 @@ function manyLinePoints(count) {
 
 assert.match(source, /var DEFAULT_INCOGNITO_KML_URL = "assets\/incognito_lot_line\.kml";/, "Default Incognito KML asset path should be explicit in the app");
 assert.match(source, /var DEFAULT_KML_LOT_TRANSFORM = \{ x: 0, y: 0, z: 0, scale: 1, rotation: 0 \};/, "Default KML should sit high enough to be visible before manual Y adjustment");
-assert.match(source, /const \[showLotLines, setShowLotLines\] = \(0, import_react9\.useState\)\(true\);/, "Lot lines should be visible by default");
+assert.match(source, /const \[showLotLines, setShowLotLines\] = \(0, import_react9\.useState\)\(false\);/, "Lot lines should remain hidden by default");
 assert.match(source, /const \[lotLineEditorOpen, setLotLineEditorOpen\] = \(0, import_react9\.useState\)\(false\);/, "Lot line editor should not open just because lot lines are visible");
 assert.match(source, /const \[lotLineEditorCollapsed, setLotLineEditorCollapsed\] = \(0, import_react9\.useState\)\(false\);/, "Lot line editor should support collapsing the controls while staying selected");
 assert.match(source, /className: `lot-editor-panel animation-editor-panel lot-line-editor-panel \$\{lotLineEditorOpen \? "active" : ""\} \$\{lotLineEditorCollapsed \? "lot-line-editor-panel--collapsed" : ""\}`/, "Lot line editor panel should expose a collapsed class without closing the editor");
@@ -188,7 +188,7 @@ assert.match(source, /"aria-hidden": !lotLineEditorOpen/, "Lot line editor aria-
 assert.match(source, /"aria-label": "Toggle lot line editor"/, "Toolbar button should toggle the editor, not the rendered line visibility");
 assert.match(source, /"aria-label": lotLineEditorCollapsed \? "Expand lot line editor" : "Collapse lot line editor"/, "Lot line editor header should let the user collapse or expand the controls");
 assert.match(source, /onClick: \(\) => setLotLineEditorCollapsed\(\(v\) => !v\)/, "Lot line editor collapse button should toggle collapsed state without changing editor selection");
-assert.match(source, /LotLinesOverlay[\s\S]*?enabled: viewerState === "ready" && showLotLines[\s\S]*?editable: lotLineEditorOpen/, "Lot line drag handles and add-vertex controls should only show when the lot line editor is open");
+assert.match(source, /LotLinesOverlay[\s\S]*?enabled: false[\s\S]*?editable: lotLineEditorOpen/, "Lot line drag handles and add-vertex controls should stay disabled");
 assert.doesNotMatch(source, /editable: lotLineEditorOpen && !lotLineEditorCollapsed/, "Collapsed lot line editor should keep visual editing handles active");
 assert.doesNotMatch(source, /LotLinesOverlay[\s\S]*?enabled: viewerState === "ready" && showLotLines[\s\S]*?editable: developerToolsEnabled/, "Global dev tools should not expose lot line edit affordances unless the lot line editor is open");
 assert.match(css, /\.lot-line-editor-panel--collapsed > :not\(\.animation-editor-header\)[\s\S]*?display: none;/, "Collapsed lot line editor should hide the heavy controls to free workspace");
