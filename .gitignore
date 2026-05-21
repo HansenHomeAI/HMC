@@ -1,6 +1,7 @@
 node_modules
 .DS_Store
 dist
+logs/
 .playwright-mcp/
 tmp-*-proof.png
 proof-*.png

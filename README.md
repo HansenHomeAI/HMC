@@ -1,6 +1,6 @@
-# Meadow Ln Viewer
+# HMC Viewer
 
-Static split-shell SOGS viewer for the Meadow Lane compressed bundle.
+Static split-shell SOGS viewer for the HMC trained compressed bundle.
 
 ## Local development
 
@@ -11,7 +11,7 @@ npm run dev
 
 The Vite dev server serves the repo root (default **5173**; if that port is busy, Vite uses the next free one—check the terminal for the URL). `/` redirects to `/3d/`.
 
-Developer tools in the shell (splat position/rotation helpers) are **on by default**. Add `?dev=0` to the URL to hide them.
+Developer tools in the shell (splat position/rotation helpers) are hidden by default. Add `?dev=1` to the URL to show them.
 
 ## KML lot-line import
 
@@ -35,16 +35,16 @@ Each dot has a world `position`, a `caption`, and a `photos` array. Photo entrie
 
 The shell defaults to this **meta.json** (same folder as the splat assets):
 
-`https://spaceport-ml-processing-staging.s3.amazonaws.com/compressed/meadow-brassmatch-compress-20260410-130344-public/supersplat_bundle/meta.json`
+`https://spaceport-ml-processing-staging.s3.amazonaws.com/compressed/hmc-mtc-20260520T2015Z/supersplat_bundle/meta.json`
 
 The iframe loads **`background_skybox.webp` in the same directory** as `meta.json` (see also `background_manifest.json` in that folder).
 
 ### Staging bucket
 
-The bucket policy allows public **`GetObject`** on `compressed/*`. Bundle objects use **SSE-S3 (AES256)** so browsers can read them without SigV4. **CORS** includes common dev localhost origins (including alternate ports when 5173 is taken) so `npm run dev` can fetch the bundle directly.
+The HMC bundle objects are KMS-encrypted, so unsigned browser reads to raw S3 return a SigV4 error. Local development uses the Vite `/api/sogs-proxy` middleware in `vite.config.mjs`, which reads the same S3 objects through `/opt/homebrew/bin/aws`.
 
 Direct object URIs (for tools / AWS CLI):
 
-- `s3://spaceport-ml-processing-staging/compressed/meadow-brassmatch-compress-20260410-130344-public/supersplat_bundle/meta.json`
-- `s3://spaceport-ml-processing-staging/compressed/meadow-brassmatch-compress-20260410-130344-public/supersplat_bundle/background_skybox.webp`
-- `s3://spaceport-ml-processing-staging/compressed/meadow-brassmatch-compress-20260410-130344-public/supersplat_bundle/background_manifest.json`
+- `s3://spaceport-ml-processing-staging/compressed/hmc-mtc-20260520T2015Z/supersplat_bundle/meta.json`
+- `s3://spaceport-ml-processing-staging/compressed/hmc-mtc-20260520T2015Z/supersplat_bundle/background_skybox.webp`
+- `s3://spaceport-ml-processing-staging/compressed/hmc-mtc-20260520T2015Z/supersplat_bundle/background_manifest.json`
