@@ -15813,7 +15813,6 @@ function SogsMigratedViewer({
           event.source.postMessage(
             {
               type: "sogs:orbitLimits",
-              minDistance: roundSplatThousandths(hv.minDistance),
               maxDistance: roundSplatThousandths(b.maxR)
             },
             "*"
@@ -15961,7 +15960,6 @@ function SogsMigratedViewer({
     });
     postToWindow(iframeRef.current?.contentWindow, {
       type: "sogs:orbitLimits",
-      minDistance: roundSplatThousandths(activeHoleView.minDistance),
       maxDistance: maxR
     });
   }, [viewerState, cameraYMin, cameraMaxRadius, activeHoleView]);
@@ -17102,7 +17100,6 @@ function SogsMigratedViewer({
                       yMin: roundSplatThousandths(cameraYMin)
                     },
                     orbitLimits: {
-                      minDistance: roundSplatThousandths(activeHoleView.minDistance),
                       maxDistance: roundSplatThousandths(cameraMaxRadius)
                     }
                   };
@@ -17157,7 +17154,6 @@ function SogsMigratedViewer({
                   });
                   postToWindow(iframeRef.current?.contentWindow, {
                     type: "sogs:orbitLimits",
-                    minDistance: CANYON_VISTA_HOLE_VIEW.minDistance,
                     maxDistance: CANYON_VISTA_HOLE_VIEW.maxDistance
                   });
                 },
