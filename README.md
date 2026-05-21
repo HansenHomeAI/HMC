@@ -41,7 +41,7 @@ The iframe loads **`background_skybox.webp` in the same directory** as `meta.jso
 
 ### Staging bucket
 
-The HMC bundle objects are KMS-encrypted, so unsigned browser reads to raw S3 return a SigV4 error. Local development uses the Vite `/api/sogs-proxy` middleware in `vite.config.mjs`, which reads the same S3 objects through `/opt/homebrew/bin/aws`.
+The HMC bundle objects are KMS-encrypted, so unsigned browser reads to raw S3 return a SigV4 error. Local development uses the Vite `/api/sogs-proxy` middleware in `vite.config.mjs`, which reads the same S3 objects through `/opt/homebrew/bin/aws`. Static Pages builds use the verified HMC hosted proxy at `https://agent-40136728-montana-time.v0-spaceport-website-preview2.pages.dev`.
 
 Direct object URIs (for tools / AWS CLI):
 

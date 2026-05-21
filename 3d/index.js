@@ -7389,6 +7389,7 @@ var PROXY_HOSTS = /* @__PURE__ */ new Set([
   "spaceport-ml-processing.s3.us-west-2.amazonaws.com"
 ]);
 var STAGING_BUNDLE_PREFIX = "/compressed/hmc-mtc-20260520T2015Z/supersplat_bundle";
+var REMOTE_SOGS_PROXY_ORIGIN = "https://agent-40136728-montana-time.v0-spaceport-website-preview2.pages.dev";
 function getStagingAssetOrigin() {
   return "https://spaceport-ml-processing-staging.s3.amazonaws.com";
 }
@@ -7434,7 +7435,15 @@ function getBaseOrigin() {
 function convertToProxyPath(url) {
   const base = `${url.protocol}//${url.host}`;
   const encodedBase = base.replace("://", ":/");
-  return `/api/sogs-proxy/${encodedBase}${url.pathname}${url.search}`;
+  const path = `/api/sogs-proxy/${encodedBase}${url.pathname}${url.search}`;
+  try {
+    const host = window.location.hostname;
+    if (host === "localhost" || host === "127.0.0.1") {
+      return path;
+    }
+  } catch {
+  }
+  return `${REMOTE_SOGS_PROXY_ORIGIN}${path}`;
 }
 function normalizeBundleUrl(rawValue, options = {}) {
   const trimmed = rawValue.trim();
