@@ -2,6 +2,7 @@ import { readFileSync } from "node:fs";
 import { applySogsCameraBounds } from "../supersplat-viewer/camera-bounds.mjs";
 
 const bridgeSource = readFileSync(new URL("../supersplat-viewer/sogs-bridge.mjs", import.meta.url), "utf8");
+const viewerSource = readFileSync(new URL("../supersplat-viewer/index.js", import.meta.url), "utf8");
 const epsilon = 1e-9;
 
 function assertClose(actual, expected, message) {
@@ -20,6 +21,14 @@ if (!bridgeSource.includes("clampSogsCameraPosition(cameraManager, { slideFocusA
 
 if (!bridgeSource.includes("if (clampSogsCameraPosition(cameraManager) && typeof cameraManager.syncOrbitFromCurrentCamera === \"function\")")) {
   throw new Error("Manual orbit updates should use the sliding default and resync the orbit controller.");
+}
+
+if (!viewerSource.includes("this.setOrbitZoomRange = (minDistance, maxDistance) =>") || !viewerSource.includes("controllers.orbit.setZoomRange(min, max);")) {
+  throw new Error("Viewer should expose orbit zoom limits instead of relying on world-origin radius clamping.");
+}
+
+if (!bridgeSource.includes('d.type === "sogs:orbitLimits"') || !bridgeSource.includes("viewer.cameraManager.setOrbitZoomRange(minDistance, maxDistance);")) {
+  throw new Error("SOGS bridge should apply parent-owned orbit zoom limits.");
 }
 
 const manualEye = { x: 12, y: 0, z: 5 };

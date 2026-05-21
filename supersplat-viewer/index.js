@@ -100956,6 +100956,9 @@ class OrbitController {
         this.controller.moveDamping = 0.97;
         this.controller.zoomDamping = 0.97;
     }
+    setZoomRange(minDistance, maxDistance) {
+        this.controller.zoomRange = new Vec2(minDistance, maxDistance);
+    }
     onEnter(camera) {
         p.position.copy(camera.position);
         p.angles.copy(camera.angles);
@@ -101150,6 +101153,12 @@ class CameraManager {
         /** Spaceport SOGS: after scripted `camera.look()` frames, orbit internal pose is stale; snap (no smooth) so no ~100ms lerp jitter. */
         this.syncOrbitFromCurrentCamera = () => {
             controllers.orbit.goto(this.camera, false);
+        };
+        /** Spaceport SOGS: parent-owned orbit zoom limits. Keeps max zoom-out from moving the orbit focus. */
+        this.setOrbitZoomRange = (minDistance, maxDistance) => {
+            const min = Number.isFinite(minDistance) && minDistance > 0 ? minDistance : 0.01;
+            const max = Number.isFinite(maxDistance) && maxDistance >= min ? maxDistance : Infinity;
+            controllers.orbit.setZoomRange(min, max);
         };
     }
     emitPickFocusScreen() {

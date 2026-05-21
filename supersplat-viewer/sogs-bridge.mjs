@@ -887,6 +887,18 @@ document.addEventListener("DOMContentLoaded", async () => {
             : null;
         app.renderNextFrame = true;
       }
+      if (d.type === "sogs:orbitLimits") {
+        const minDistance =
+          typeof d.minDistance === "number" && Number.isFinite(d.minDistance) && d.minDistance > 0 ? d.minDistance : 0.01;
+        const maxDistance =
+          typeof d.maxDistance === "number" && Number.isFinite(d.maxDistance) && d.maxDistance >= minDistance
+            ? d.maxDistance
+            : Infinity;
+        if (typeof viewer.cameraManager?.setOrbitZoomRange === "function") {
+          viewer.cameraManager.setOrbitZoomRange(minDistance, maxDistance);
+        }
+        app.renderNextFrame = true;
+      }
       if (d.type === "sogs:skyboxRotation") {
         try {
           const scene = app.scene;

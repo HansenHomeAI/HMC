@@ -34,8 +34,12 @@ if (tapDotMaxVisibleDistanceMatches.length < 4) {
   throw new Error("Bundled Incognito tap dots must use explicit edited per-dot max visible distances.");
 }
 
-if (!source.includes("maxRadiusFromOrigin: 1")) {
-  throw new Error("Viewer radius cap must stay at one unit.");
+if (!source.includes("maxDistance: 1")) {
+  throw new Error("Viewer orbit max distance must stay at one unit.");
+}
+
+if (source.includes("maxRadiusFromOrigin: 1")) {
+  throw new Error("One-unit orbit distance must not be implemented as a world-origin radius cap.");
 }
 
 const incognitoProjectId = "78659e97-7978-43f6-88b8-577e45f182de";

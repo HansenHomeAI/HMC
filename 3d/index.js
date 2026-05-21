@@ -7532,7 +7532,7 @@ var CANYON_VISTA_DEFAULT_PATH_CHECKPOINTS = [
 var CANYON_VISTA_CAMERA_START_Y = 0.55;
 var CANYON_VISTA_CAMERA_WORLD_BOUNDS = {
   yMin: 0,
-  maxRadiusFromOrigin: 1
+  maxRadiusFromOrigin: 50
 };
 var DEFAULT_LOT_LINE_STYLE = { color: "#eaffdb", width: 0.004, height: 0.001, opacity: 0.72 };
 function normalizeLotLineHex(value) {
@@ -15390,11 +15390,11 @@ function SogsMigratedViewer({
   const [skyboxRotStr, setSkyboxRotStr] = (0, import_react9.useState)(() => formatSkyboxRotStrFromNums([...SOGS_DEFAULT_SKYBOX_ROTATION]));
   const [showWorldAxes, setShowWorldAxes] = (0, import_react9.useState)(SOGS_DEFAULT_WORLD_AXES);
   const [cameraYMin, setCameraYMin] = (0, import_react9.useState)(CANYON_VISTA_CAMERA_WORLD_BOUNDS.yMin);
-  const [cameraMaxRadius, setCameraMaxRadius] = (0, import_react9.useState)(CANYON_VISTA_CAMERA_WORLD_BOUNDS.maxRadiusFromOrigin);
+  const [cameraMaxRadius, setCameraMaxRadius] = (0, import_react9.useState)(CANYON_VISTA_HOLE_VIEW.maxDistance);
   const userImportedKmlRef = (0, import_react9.useRef)(false);
   const cameraBoundsRef = (0, import_react9.useRef)({
     yMin: CANYON_VISTA_CAMERA_WORLD_BOUNDS.yMin,
-    maxR: CANYON_VISTA_CAMERA_WORLD_BOUNDS.maxRadiusFromOrigin
+    maxR: CANYON_VISTA_HOLE_VIEW.maxDistance
   });
   const showWorldAxesRef = (0, import_react9.useRef)(SOGS_DEFAULT_WORLD_AXES);
   const selectedLotDot = (0, import_react9.useMemo)(() => lotDots.find((d) => d.name === selectedLotPointName) ?? lotDots[0] ?? null, [lotDots, selectedLotPointName]);
@@ -15806,8 +15806,15 @@ function SogsMigratedViewer({
           event.source.postMessage(
             {
               type: "sogs:cameraBounds",
-              yMin: roundSplatThousandths(b.yMin),
-              maxRadiusFromOrigin: roundSplatThousandths(b.maxR)
+              yMin: roundSplatThousandths(b.yMin)
+            },
+            "*"
+          );
+          event.source.postMessage(
+            {
+              type: "sogs:orbitLimits",
+              minDistance: roundSplatThousandths(hv.minDistance),
+              maxDistance: roundSplatThousandths(b.maxR)
             },
             "*"
           );
@@ -15950,10 +15957,14 @@ function SogsMigratedViewer({
     const maxR = roundSplatThousandths(cameraMaxRadius);
     postToWindow(iframeRef.current?.contentWindow, {
       type: "sogs:cameraBounds",
-      yMin,
-      maxRadiusFromOrigin: maxR
+      yMin
     });
-  }, [viewerState, cameraYMin, cameraMaxRadius]);
+    postToWindow(iframeRef.current?.contentWindow, {
+      type: "sogs:orbitLimits",
+      minDistance: roundSplatThousandths(activeHoleView.minDistance),
+      maxDistance: maxR
+    });
+  }, [viewerState, cameraYMin, cameraMaxRadius, activeHoleView]);
   (0, import_react9.useEffect)(() => {
     if (viewerState !== "ready" || !splatAlignOpen) return;
     postToWindow(iframeRef.current?.contentWindow, { type: "sogs:requestState" });
@@ -16795,7 +16806,7 @@ function SogsMigratedViewer({
               )
             ] }),
             /* @__PURE__ */ (0, import_jsx_runtime11.jsxs)("label", { className: "animation-path-inline-label animation-path-speed", children: [
-              "Max radius",
+              "Max distance",
               /* @__PURE__ */ (0, import_jsx_runtime11.jsx)(
                 "input",
                 {
@@ -17088,8 +17099,11 @@ function SogsMigratedViewer({
                     ],
                     worldAxes: showWorldAxes,
                     cameraBounds: {
-                      yMin: roundSplatThousandths(cameraYMin),
-                      maxRadiusFromOrigin: roundSplatThousandths(cameraMaxRadius)
+                      yMin: roundSplatThousandths(cameraYMin)
+                    },
+                    orbitLimits: {
+                      minDistance: roundSplatThousandths(activeHoleView.minDistance),
+                      maxDistance: roundSplatThousandths(cameraMaxRadius)
                     }
                   };
                   const text = JSON.stringify(payload, null, 2);
@@ -17124,6 +17138,7 @@ function SogsMigratedViewer({
                   setSkyboxRotation(skyD);
                   setSkyboxRotStr(formatSkyboxRotStrFromNums(skyD));
                   setShowWorldAxes(SOGS_DEFAULT_WORLD_AXES);
+                  setCameraMaxRadius(CANYON_VISTA_HOLE_VIEW.maxDistance);
                   ignoreNextSogsStateRef.current = true;
                   postToWindow(iframeRef.current?.contentWindow, {
                     type: "sogs:apply",
@@ -17139,6 +17154,11 @@ function SogsMigratedViewer({
                   postToWindow(iframeRef.current?.contentWindow, {
                     type: "sogs:worldGuides",
                     enabled: SOGS_DEFAULT_WORLD_AXES
+                  });
+                  postToWindow(iframeRef.current?.contentWindow, {
+                    type: "sogs:orbitLimits",
+                    minDistance: CANYON_VISTA_HOLE_VIEW.minDistance,
+                    maxDistance: CANYON_VISTA_HOLE_VIEW.maxDistance
                   });
                 },
                 children: "Reset defaults"
