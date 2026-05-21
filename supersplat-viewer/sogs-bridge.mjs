@@ -3,6 +3,7 @@
  * Uses PlayCanvas classes from the bundled viewer (`window.__sogsPc`), not a separate esm.sh build.
  */
 import { main } from "./index.js";
+import { applySogsCameraBounds } from "./camera-bounds.mjs";
 
 const { Color, CylinderGeometry, Entity, Mesh, MeshInstance, Quat, StandardMaterial, Vec3 } = window.__sogsPc;
 
@@ -275,34 +276,22 @@ function postCameraPoseFromViewer(cameraManager) {
  * Keeps the camera eye (logical `Camera.position`) above a world Y floor and/or inside a sphere around origin.
  * Iterates so Y and radius limits can both apply without fighting.
  *
- * After moving only `position`, the orbit camera's `angles` + `distance` would still describe the *old* focus.
- * `calcFocusPoint` would then report a bogus target (often very far). We snapshot the true focus before clamping
- * and run `look(clampedEye, savedFocus)` so the pivot stays fixed while the eye is constrained.
+ * Manual orbit/pan should stay light at the radius edge. If the radius clamp moves the eye, move the orbit focus
+ * by the same delta so user input slides along the boundary instead of pushing against a fixed origin.
+ * Scripted camera moves can opt out so authored look-at targets stay exact.
  */
-function clampSogsCameraPosition(cameraManager) {
+function clampSogsCameraPosition(cameraManager, options = {}) {
+  const slideFocusAtRadius = options.slideFocusAtRadius !== false;
   const yMin = window.__sogsCameraYMin;
   const maxR = window.__sogsCameraMaxRadius;
-  const hasY = typeof yMin === "number" && Number.isFinite(yMin);
-  const hasR = typeof maxR === "number" && Number.isFinite(maxR) && maxR > 0;
-  if (!hasY && !hasR) return false;
   const cam = cameraManager.camera;
   cam.calcFocusPoint(tmpFocus);
   const pos = cam.position;
-  let changed = false;
-  for (let i = 0; i < 6; i++) {
-    if (hasY) {
-      const ny = Math.max(pos.y, yMin);
-      if (ny !== pos.y) changed = true;
-      pos.y = ny;
-    }
-    if (hasR) {
-      const len = pos.length();
-      if (len > maxR && len > 1e-20) {
-        pos.mulScalar(maxR / len);
-        changed = true;
-      }
-    }
-  }
+  const { changed } = applySogsCameraBounds(pos, tmpFocus, {
+    yMin,
+    maxRadius: maxR,
+    slideFocusAtRadius,
+  });
   if (changed) {
     tmpFrom.copy(pos);
     cam.look(tmpFrom, tmpFocus);
@@ -326,7 +315,7 @@ function setupCameraManagerBridge(cameraManager) {
           window.__sogsUserFov = pose.fov;
         }
       }
-      clampSogsCameraPosition(cameraManager);
+      clampSogsCameraPosition(cameraManager, { slideFocusAtRadius: false });
       flushSogsAccumulatedInputFrame(frame);
       prevScripted = true;
       return;
