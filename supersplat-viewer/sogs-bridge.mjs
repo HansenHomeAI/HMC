@@ -894,6 +894,7 @@ document.addEventListener("DOMContentLoaded", async () => {
           typeof d.maxDistance === "number" && Number.isFinite(d.maxDistance) && d.maxDistance >= minDistance
             ? d.maxDistance
             : Infinity;
+        window.__sogsOrbitMaxDistance = maxDistance;
         if (typeof viewer.cameraManager?.setOrbitZoomRange === "function") {
           viewer.cameraManager.setOrbitZoomRange(minDistance, maxDistance);
         }

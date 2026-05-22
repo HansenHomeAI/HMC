@@ -101122,7 +101122,11 @@ class CameraManager {
         });
         events.on('pick', (payload) => {
             const worldPos = payload && payload.world ? payload.world : payload;
-            if (!worldPos || !isFinite(worldPos.x)) {
+            if (!worldPos || !isFinite(worldPos.x) || !isFinite(worldPos.y) || !isFinite(worldPos.z)) {
+                return;
+            }
+            const focusMaxRadius = globalThis?.__sogsOrbitMaxDistance;
+            if (Number.isFinite(focusMaxRadius) && focusMaxRadius > 0 && Math.hypot(worldPos.x, worldPos.y, worldPos.z) > focusMaxRadius + 1e-6) {
                 return;
             }
             if (state.cameraMode !== 'orbit') {
