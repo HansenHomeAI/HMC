@@ -8227,15 +8227,16 @@ function AnimationPathPanel({
   const state = pathStateRef.current;
   const checkpoints = state.checkpoints;
   const segCount = getPathSegmentCount(state);
-  const exportJson = (0, import_react.useCallback)(() => {
+  const exportJson = (0, import_react.useCallback)(async () => {
     const json = JSON.stringify(serializePathPayload(pathStateRef.current), null, 2);
-    void navigator.clipboard.writeText(json).then(
-      () => {
-        setCopyFeedback("Copied");
-        window.setTimeout(() => setCopyFeedback(null), 2e3);
-      },
-      () => setCopyFeedback("Copy failed")
-    );
+    try {
+      await copyTextToClipboard(json);
+      setCopyFeedback("Copied");
+    } catch (error2) {
+      console.error("Path JSON copy failed", error2);
+      setCopyFeedback("Copy failed");
+    }
+    window.setTimeout(() => setCopyFeedback(null), 2e3);
   }, [pathStateRef]);
   return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(
     "div",
