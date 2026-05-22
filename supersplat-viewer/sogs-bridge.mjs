@@ -871,6 +871,9 @@ document.addEventListener("DOMContentLoaded", async () => {
           target: d.target,
           fov: d.fov,
         };
+        if (Array.isArray(d.target) && d.target.length === 3) {
+          window.__sogsOrbitFocusCenter = d.target;
+        }
         app.renderNextFrame = true;
       }
       if (d.type === "sogs:cameraMode") {
@@ -895,6 +898,9 @@ document.addEventListener("DOMContentLoaded", async () => {
             ? d.maxDistance
             : Infinity;
         window.__sogsOrbitMaxDistance = maxDistance;
+        if (Array.isArray(d.focusCenter) && d.focusCenter.length === 3) {
+          window.__sogsOrbitFocusCenter = d.focusCenter;
+        }
         if (typeof viewer.cameraManager?.setOrbitZoomRange === "function") {
           viewer.cameraManager.setOrbitZoomRange(minDistance, maxDistance);
         }

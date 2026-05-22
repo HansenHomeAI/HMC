@@ -101126,7 +101126,11 @@ class CameraManager {
                 return;
             }
             const focusMaxRadius = globalThis?.__sogsOrbitMaxDistance;
-            if (Number.isFinite(focusMaxRadius) && focusMaxRadius > 0 && Math.hypot(worldPos.x, worldPos.y, worldPos.z) > focusMaxRadius + 1e-6) {
+            const focusCenter = Array.isArray(globalThis?.__sogsOrbitFocusCenter) && globalThis.__sogsOrbitFocusCenter.length === 3 ? globalThis.__sogsOrbitFocusCenter : null;
+            const focusCenterX = Number.isFinite(focusCenter?.[0]) ? focusCenter[0] : 0;
+            const focusCenterY = Number.isFinite(focusCenter?.[1]) ? focusCenter[1] : 0;
+            const focusCenterZ = Number.isFinite(focusCenter?.[2]) ? focusCenter[2] : 0;
+            if (Number.isFinite(focusMaxRadius) && focusMaxRadius > 0 && Math.hypot(worldPos.x - focusCenterX, worldPos.y - focusCenterY, worldPos.z - focusCenterZ) > focusMaxRadius + 1e-6) {
                 return;
             }
             if (state.cameraMode !== 'orbit') {

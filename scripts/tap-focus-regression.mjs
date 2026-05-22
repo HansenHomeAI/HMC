@@ -14,10 +14,15 @@ if (!pickBlock.includes("state.cameraMode = 'orbit';")) {
   throw new Error("Tap focus should force orbit mode instead of dropping picks while another camera mode is active.");
 }
 
-const radiusGuardIndex = pickBlock.indexOf("Math.hypot(worldPos.x, worldPos.y, worldPos.z)");
+const radiusGuardIndex = pickBlock.indexOf("Math.hypot(worldPos.x - focusCenterX, worldPos.y - focusCenterY, worldPos.z - focusCenterZ)");
 const orbitModeIndex = pickBlock.indexOf("state.cameraMode = 'orbit';");
-if (!pickBlock.includes("globalThis?.__sogsOrbitMaxDistance") || radiusGuardIndex === -1 || radiusGuardIndex > orbitModeIndex) {
-  throw new Error("Tap focus should ignore picks outside the configured max orbit distance before moving the orbit target.");
+if (
+  !pickBlock.includes("globalThis?.__sogsOrbitMaxDistance") ||
+  !pickBlock.includes("globalThis?.__sogsOrbitFocusCenter") ||
+  radiusGuardIndex === -1 ||
+  radiusGuardIndex > orbitModeIndex
+) {
+  throw new Error("Tap focus should ignore picks outside the configured fixed max-distance focus area before moving the orbit target.");
 }
 
 if (!pickBlock.includes("controllers.orbit.goto(tmpCamera);")) {
@@ -58,6 +63,14 @@ if (!bridgeSource.includes('window.parent.postMessage({ type: "sogs:userInteract
 
 if (!bridgeSource.includes("window.__sogsOrbitMaxDistance = maxDistance;")) {
   throw new Error("Viewer bridge should expose the configured max orbit distance for tap-focus bounds.");
+}
+
+if (!bridgeSource.includes("window.__sogsOrbitFocusCenter = d.focusCenter;") || !bridgeSource.includes("window.__sogsOrbitFocusCenter = d.target;")) {
+  throw new Error("Viewer bridge should expose a fixed orbit focus center for tap-focus bounds.");
+}
+
+if (!shellSource.includes("focusCenter: [roundSplatThousandths(t.x), roundSplatThousandths(t.y), roundSplatThousandths(t.z)]")) {
+  throw new Error("Parent viewer should send the authored focus center with initial orbit limits.");
 }
 
 if (!shellSource.includes("stopScriptedViewerMotion")) {

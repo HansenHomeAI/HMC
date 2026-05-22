@@ -15813,7 +15813,8 @@ function SogsMigratedViewer({
           event.source.postMessage(
             {
               type: "sogs:orbitLimits",
-              maxDistance: roundSplatThousandths(b.maxR)
+              maxDistance: roundSplatThousandths(b.maxR),
+              focusCenter: [roundSplatThousandths(t.x), roundSplatThousandths(t.y), roundSplatThousandths(t.z)]
             },
             "*"
           );
@@ -15960,7 +15961,12 @@ function SogsMigratedViewer({
     });
     postToWindow(iframeRef.current?.contentWindow, {
       type: "sogs:orbitLimits",
-      maxDistance: maxR
+      maxDistance: maxR,
+      focusCenter: [
+        roundSplatThousandths(activeHoleView.target.x),
+        roundSplatThousandths(activeHoleView.target.y),
+        roundSplatThousandths(activeHoleView.target.z)
+      ]
     });
   }, [viewerState, cameraYMin, cameraMaxRadius, activeHoleView]);
   (0, import_react9.useEffect)(() => {
@@ -17100,7 +17106,12 @@ function SogsMigratedViewer({
                       yMin: roundSplatThousandths(cameraYMin)
                     },
                     orbitLimits: {
-                      maxDistance: roundSplatThousandths(cameraMaxRadius)
+                      maxDistance: roundSplatThousandths(cameraMaxRadius),
+                      focusCenter: [
+                        roundSplatThousandths(activeHoleView.target.x),
+                        roundSplatThousandths(activeHoleView.target.y),
+                        roundSplatThousandths(activeHoleView.target.z)
+                      ]
                     }
                   };
                   const text = JSON.stringify(payload, null, 2);
@@ -17154,7 +17165,12 @@ function SogsMigratedViewer({
                   });
                   postToWindow(iframeRef.current?.contentWindow, {
                     type: "sogs:orbitLimits",
-                    maxDistance: CANYON_VISTA_HOLE_VIEW.maxDistance
+                    maxDistance: CANYON_VISTA_HOLE_VIEW.maxDistance,
+                    focusCenter: [
+                      roundSplatThousandths(CANYON_VISTA_HOLE_VIEW.target.x),
+                      roundSplatThousandths(CANYON_VISTA_HOLE_VIEW.target.y),
+                      roundSplatThousandths(CANYON_VISTA_HOLE_VIEW.target.z)
+                    ]
                   });
                 },
                 children: "Reset defaults"
