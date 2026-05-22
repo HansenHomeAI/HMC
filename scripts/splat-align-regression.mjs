@@ -4,6 +4,7 @@ import { readFileSync } from "node:fs";
 const source = readFileSync(new URL("../3d/index.js", import.meta.url), "utf8");
 
 assert.match(source, /maxDistance: 1,/, "HMC orbit max distance should be one unit.");
+assert.match(source, /var CANYON_VISTA_CAMERA_WORLD_BOUNDS = \{\s*yMin: 0\.1,/, "HMC camera Y floor should default to 0.1.");
 assert.match(source, /maxRadiusFromOrigin: 50/, "HMC world-origin safety radius should stay separate from the one-unit orbit max distance.");
 assert.doesNotMatch(source, /maxRadiusFromOrigin: 1\b/, "The one-unit zoom limit should not be implemented as a world-origin radius clamp.");
 assert.match(source, /type: "sogs:orbitLimits"/, "Parent viewer should send orbit zoom limits into the SOGS iframe.");

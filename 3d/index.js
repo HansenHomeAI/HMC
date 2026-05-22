@@ -7531,7 +7531,7 @@ var CANYON_VISTA_DEFAULT_PATH_CHECKPOINTS = [
 ];
 var CANYON_VISTA_CAMERA_START_Y = 0.55;
 var CANYON_VISTA_CAMERA_WORLD_BOUNDS = {
-  yMin: 0,
+  yMin: 0.1,
   maxRadiusFromOrigin: 50
 };
 var DEFAULT_LOT_LINE_STYLE = { color: "#eaffdb", width: 0.004, height: 0.001, opacity: 0.72 };
