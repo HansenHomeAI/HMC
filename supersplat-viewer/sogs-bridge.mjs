@@ -2,7 +2,7 @@
  * Spaceport SOGS bridge: postMessage API for parent page + optional RGB world axes (mesh, not drawLine overlay).
  * Uses PlayCanvas classes from the bundled viewer (`window.__sogsPc`), not a separate esm.sh build.
  */
-import { main } from "./index.js";
+import { main } from "./index.js?v=20260916-skybox-cors";
 import { applySogsCameraBounds } from "./camera-bounds.mjs";
 
 const { Color, CylinderGeometry, Entity, Mesh, MeshInstance, Quat, StandardMaterial, Vec3 } = window.__sogsPc;

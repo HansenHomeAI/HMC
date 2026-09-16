@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>HMC cross-origin skybox regression</title>
+  <style>body { font: 16px system-ui; margin: 20px; } iframe { width: 100%; height: 45vh; min-height: 200px; border: 0; } pre { white-space: pre-wrap; }</style>
+</head>
+<body>
+  <h1>Cross-origin skybox regression</h1>
+  <p>Run in Safari and Chromium. This uses the real renderer and hosted HMC assets. Success requires a rendered model, camera controls, and an uploaded sky texture.</p>
+  <button id="run">Run HQ and deferred-skybox checks</button>
+  <div id="viewer"></div>
+  <pre id="result">Ready</pre>
+  <script type="module">
+    const output = document.querySelector('#result');
+    const host = document.querySelector('#viewer');
+    const proxy = 'https://agent-40136728-montana-time.v0-spaceport-website-preview2.pages.dev/api/sogs-proxy/';
+    const bundle = proxy + 'https:/spaceport-ml-processing-staging.s3.amazonaws.com/compressed/hmc-mtc-20260520T2015Z/supersplat_bundle/';
+    const results = [];
+    async function check(quality) {
+      const frame = document.createElement('iframe');
+      frame.title = quality + ' HMC viewer';
+      const params = new URLSearchParams({
+        settings: '../supersplat-viewer/settings.json',
+        content: bundle + 'meta.json',
+        skybox: bundle + 'background_skybox.webp?cors-regression=' + crypto.randomUUID(),
+        quality, noui: '1', noanim: '1'
+      });
+      const started = performance.now();
+      let firstFrameMs = null;
+      const onMessage = event => {
+        if (event.source === frame.contentWindow && event.data?.type === 'supersplat:firstFrame') {
+          firstFrameMs ??= performance.now() - started;
+        }
+      };
+      addEventListener('message', onMessage);
+      frame.src = '../supersplat-viewer/index.html?' + params;
+      host.replaceChildren(frame);
+      try {
+        await new Promise((resolve, reject) => {
+          const timer = setInterval(() => {
+            const ctx = frame.contentWindow.__sogsCtx;
+            if (firstFrameMs !== null && ctx?.viewer?.cameraManager && ctx.app.scene.envAtlas && ctx.app.root.findByName('gsplat')) {
+              clearInterval(timer); resolve();
+            } else if (performance.now() - started > 15000) {
+              clearInterval(timer); reject(new Error('No complete model/camera/sky startup within 15 seconds'));
+            }
+          }, 50);
+        });
+        return { quality, passed: true, firstFrameMs: Math.round(firstFrameMs), completeMs: Math.round(performance.now() - started) };
+      } catch (error) {
+        return { quality, passed: false, error: String(error) };
+      } finally {
+        removeEventListener('message', onMessage);
+      }
+    }
+    document.querySelector('#run').onclick = async event => {
+      event.target.disabled = true;
+      results.length = 0;
+      for (const quality of ['hq', 'lq']) {
+        output.textContent = 'Running ' + quality + '…';
+        results.push(await check(quality));
+      }
+      output.textContent = JSON.stringify(results, null, 2);
+      document.title = results.every(r => r.passed) ? 'PASS — HMC skybox regression' : 'FAIL — HMC skybox regression';
+      event.target.disabled = false;
+    };
+  </script>
+</body>
+</html>
