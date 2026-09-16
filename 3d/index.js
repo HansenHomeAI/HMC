@@ -15705,6 +15705,7 @@ function SogsMigratedViewer({
   const viewerSrc = (() => {
     if (!activeUrl) return null;
     const params = new URLSearchParams({
+      v: "20260916-skybox-cors",
       settings: viewerSettingsPath,
       content: activeUrl,
       skybox: skyboxUrlFromBundleMetaUrl(activeUrl),
