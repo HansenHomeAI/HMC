@@ -56,6 +56,7 @@ Click **Run HQ and deferred-skybox checks**. Both cases must report `passed: tru
 the checks require the real model, camera manager, and sky texture to finish loading.
 The sky request uses a fresh URL each time so a cached texture cannot hide a CORS
 regression. Full cold-load profiling additionally needs browser caching disabled
-for scripts and the model bundle. The HTML-to-bridge-to-renderer module URLs carry
-a release revision so a newly fetched viewer document does not reuse the old
-renderer. GitHub Pages may still cache an older HTML document briefly.
+for scripts and the model bundle. The outer shell, embedded viewer document,
+bridge, and renderer URLs carry a release revision so refreshing the outer page
+also replaces a cached embedded document and its old renderer. GitHub Pages may
+still cache an older outer HTML document briefly.
