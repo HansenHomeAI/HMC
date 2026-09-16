@@ -102426,6 +102426,9 @@ const loadSkybox = (app, url) => {
             mipmaps: false,
             addressu: 'repeat',
             addressv: 'clamp'
+        }, {
+            // Safari uses HTMLImageElement here; remote WebGL textures require CORS.
+            crossOrigin: 'anonymous'
         });
         asset.on('load', () => {
             resolve(asset);

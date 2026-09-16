@@ -48,3 +48,14 @@ Direct object URIs (for tools / AWS CLI):
 - `s3://spaceport-ml-processing-staging/compressed/hmc-mtc-20260520T2015Z/supersplat_bundle/meta.json`
 - `s3://spaceport-ml-processing-staging/compressed/hmc-mtc-20260520T2015Z/supersplat_bundle/background_skybox.webp`
 - `s3://spaceport-ml-processing-staging/compressed/hmc-mtc-20260520T2015Z/supersplat_bundle/background_manifest.json`
+
+## Viewer startup regression
+
+Serve the repository and open `/tests/skybox-cors.html` in Safari and Chromium.
+Click **Run HQ and deferred-skybox checks**. Both cases must report `passed: true`;
+the checks require the real model, camera manager, and sky texture to finish loading.
+The sky request uses a fresh URL each time so a cached texture cannot hide a CORS
+regression. Full cold-load profiling additionally needs browser caching disabled
+for scripts and the model bundle. The HTML-to-bridge-to-renderer module URLs carry
+a release revision so a newly fetched viewer document does not reuse the old
+renderer. GitHub Pages may still cache an older HTML document briefly.
